@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARGOS // INFILTRACIÓN ÉTICA</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+
+
+<style>
+
+:root{
+  --bg:#060a08;--bg2:#090e0b;--bg3:#0d1610;
+  --border:#162019;--green:#00ff41;--gdim:#1eaa3a;
+  --cyan:#00e5ff;--yellow:#ffd600;--orange:#ff9100;
+  --red:#ff1744;--purple:#d500f9;--white:#c0d4c0;--dim:#3d5a42;
+  --mono:'Share Tech Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{background:var(--bg);color:var(--green);font-family:var(--mono);height:100%;overflow:hidden;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.07) 2px,rgba(0,0,0,.07) 3px);pointer-events:none;z-index:9999;}
+canvas{position:fixed;top:0;left:0;pointer-events:none;}
+#matrix-bg{z-index:0;opacity:.14;}
+#matrix-fx{z-index:600;display:none;}
+.hidden{display:none!important;}
+
+/* BOOT */
+
+#boot{position:fixed;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:6vw 8vw;background:var(--bg);z-index:500;}
+#boot-log{font-size:.8rem;line-height:2.1;max-width:720px;}
+.bl{opacity:0;animation:blfade .04s forwards;} @keyframes blfade{to{opacity:1;}}
+.bl-g{color:var(--green);} .bl-d{color:var(--dim);} .bl-r{color:var(--red);} .bl-c{color:var(--cyan);} .bl-y{color:var(--yellow);}
+.bl-title{color:var(--red);font-size:1.05rem;letter-spacing:.14em;margin-bottom:.5rem;}
+.bbar{display:inline-flex;align-items:center;gap:.5rem;vertical-align:middle;margin-left:.3rem;}
+.bbar-bg{width:160px;height:7px;background:rgba(255,23,68,.12);border:1px solid;vertical-align:middle;}
+.bbar-bg.r{border-color:var(--red);} .bbar-bg.g{border-color:var(--green);} .bbar-bg.c{border-color:var(--cyan);}
+.bbar-fill{display:block;height:100%;width:0;animation:bbarfill 1.1s ease-out forwards;}
+.bbar-fill.r{background:var(--red);} .bbar-fill.g{background:var(--green);} .bbar-fill.c{background:var(--cyan);}
+@keyframes bbarfill{to{width:100%;}}
+.bl-ok{color:var(--green);}
+
+
+/* START */
+#start{position:fixed;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:1.2rem;text-align:center;z-index:10;overflow-y:auto;}
+.s-sys{font-size:.58rem;color:var(--red);letter-spacing:.38em;margin-bottom:.3rem;animation:blink .75s infinite;} @keyframes blink{50%{opacity:0;}}
+.s-title{font-size:clamp(1.8rem,5vw,3rem);color:var(--red);letter-spacing:.14em;text-shadow:0 0 30px rgba(255,23,68,.55);margin-bottom:.18rem;}
+.s-sub{font-size:.65rem;color:var(--dim);letter-spacing:.24em;margin-bottom:.3rem;}
+.s-ver{font-size:.58rem;color:var(--gdim);letter-spacing:.14em;margin-bottom:1.5rem;}
+.brief{max-width:620px;width:100%;border:1px solid rgba(255,23,68,.25);border-left:3px solid var(--red);padding:1.1rem 1.3rem;margin-bottom:1.5rem;text-align:left;background:rgba(255,23,68,.03);position:relative;}
+.brief::before{content:'// BRIEFING CLASIFICADO';position:absolute;top:-.48rem;left:1rem;background:var(--bg);padding:0 .35rem;font-size:.58rem;color:var(--red);letter-spacing:.12em;}
+.brief p{font-family:var(--sans);font-size:.9rem;color:var(--white);line-height:1.75;}
+.brief strong{color:var(--yellow);}
+.inp-group{width:100%;max-width:380px;text-align:left;margin-bottom:1.2rem;}
+.inp-lbl{display:block;font-size:.6rem;color:var(--dim);letter-spacing:.13em;margin-bottom:.38rem;}
+.t-input{width:100%;background:rgba(0,255,65,.02);border:1px solid var(--gdim);color:var(--green);font-family:var(--mono);font-size:.95rem;padding:.65rem .9rem;outline:none;transition:all .2s;}
+.t-input:focus{border-color:var(--green);box-shadow:0 0 10px rgba(0,255,65,.15);}
+.t-input::placeholder{color:var(--dim);}
+.btn-hack{background:transparent;border:1px solid var(--red);color:var(--red);font-family:var(--mono);font-size:.88rem;letter-spacing:.12em;padding:.72rem 2.2rem;cursor:pointer;transition:all .2s;}
+.btn-hack:hover:not(:disabled){background:rgba(255,23,68,.07);box-shadow:0 0 18px rgba(255,23,68,.3);}
+.btn-hack:disabled{opacity:.25;cursor:not-allowed;}
+.cur{animation:blink .9s infinite;}
+
+/* GAME GRID */
+#game{position:fixed;inset:0;display:grid;grid-template-rows:auto auto 1fr auto;z-index:10;}
+
+/* Top bar */
+#topbar{display:grid;grid-template-columns:auto 1fr auto;align-items:center;padding:.32rem .9rem;border-bottom:1px solid var(--border);background:rgba(6,10,8,.97);font-size:.62rem;gap:.6rem;}
+#tb-left{display:flex;align-items:center;gap:.55rem;min-width:0;}
+#tb-center{color:var(--white);text-align:center;font-size:.68rem;letter-spacing:.06em;}
+#tb-right{display:flex;align-items:center;gap:.7rem;justify-content:flex-end;}
+.tb-sys{color:var(--red);font-size:.6rem;letter-spacing:.12em;}
+#compromise-bar{display:flex;align-items:center;gap:.35rem;}
+#comp-bg{width:70px;height:4px;background:rgba(255,23,68,.12);border:1px solid rgba(255,23,68,.25);}
+#comp-fill{height:100%;background:var(--red);width:0;transition:width .6s ease;}
+#comp-pct{color:var(--red);font-size:.58rem;min-width:28px;}
+.tb-sep{color:var(--border);padding:0 .1rem;}
+#tb-blocks{color:var(--cyan);font-size:.6rem;letter-spacing:.08em;}
+#tb-timer{font-size:1rem;font-weight:bold;transition:color .3s;min-width:50px;text-align:right;}
+.t-green{color:var(--green);} .t-yellow{color:var(--yellow);} .t-orange{color:var(--orange);}
+.t-red{color:var(--red);animation:tpulse .42s infinite;} @keyframes tpulse{50%{opacity:.35;}}
+
+/* Bypass bar */
+#bypassbar{display:flex;align-items:center;gap:.5rem;padding:.28rem .9rem;border-bottom:1px solid var(--border);background:rgba(6,10,8,.95);font-size:.62rem;flex-shrink:0;}
+#bp-lbl{color:var(--orange);flex-shrink:0;font-size:.6rem;}
+#bp-tgt{color:var(--cyan);flex:1;font-size:.6rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#bp-bg{width:90px;height:4px;background:rgba(255,145,0,.1);border:1px solid rgba(255,145,0,.2);flex-shrink:0;}
+#bp-fill{height:100%;width:0;transition:width .04s;}
+.bp-on{background:var(--orange);} .bp-ok{background:var(--green);}
+#bp-pct{min-width:30px;font-size:.6rem;} #bp-stat{font-size:.6rem;}
+.bp-stat-ok{color:var(--green);}
+
+/* SPLIT PANELS */
+#panels{display:grid;grid-template-columns:44% 56%;overflow:hidden;min-height:0;}
+.t-panel{display:flex;flex-direction:column;border-right:1px solid var(--border);min-height:0;overflow:hidden;}
+#panel-ops{border-right:none;}
+.panel-tbar{display:flex;align-items:center;gap:.45rem;padding:.26rem .7rem;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;}
+.ptb-dots{display:flex;gap:.22rem;}
+.ptb-dot{width:8px;height:8px;border-radius:50%;}
+.ptb-dot.r{background:#ff5f57;} .ptb-dot.y{background:#febc2e;} .ptb-dot.g{background:#28c840;}
+.ptb-title{color:var(--dim);letter-spacing:.1em;flex:1;font-size:.6rem;}
+.ptb-badge{font-size:.54rem;padding:.1rem .38rem;border:1px solid;}
+.ptb-badge.a{color:var(--green);border-color:rgba(0,255,65,.3);animation:stpulse 2s infinite;}
+.ptb-badge.b{color:var(--cyan);border-color:rgba(0,229,255,.3);}
+@keyframes stpulse{50%{opacity:.6;}}
+.panel-body{flex:1;padding:.75rem .95rem;overflow-y:auto;min-height:0;display:flex;flex-direction:column;gap:.65rem;}
+
+/* Intel panel */
+#mod-layer{font-size:.6rem;color:var(--orange);margin-bottom:.15rem;}
+#mod-cipher{font-size:.54rem;color:var(--dim);}
+#marco-box{border:1px solid rgba(0,255,65,.1);border-left:2px solid var(--gdim);padding:.7rem .9rem;background:rgba(0,255,65,.018);position:relative;display:none;}
+#marco-box::before{content:'// INTEL DESCIFRADA';position:absolute;top:-.45rem;left:.7rem;background:var(--bg3);padding:0 .3rem;font-size:.53rem;color:var(--gdim);letter-spacing:.12em;}
+#marco-text{font-family:var(--sans);font-size:.88rem;color:var(--white);line-height:1.72;}
+#sit-box{display:none;}
+.sit-lbl{font-size:.56rem;color:var(--orange);letter-spacing:.16em;margin-bottom:.3rem;}
+#sit-text{font-family:var(--sans);font-size:.9rem;color:var(--white);line-height:1.7;}
+
+/* Ops panel - question box */
+#q-box{border:1px solid;border-left:3px solid;padding:.75rem .9rem;margin-bottom:.2rem;}
+.mNK #q-box{border-color:rgba(0,229,255,.25);border-left-color:var(--cyan);background:rgba(0,229,255,.03);}
+.mNP #q-box{border-color:rgba(255,145,0,.25);border-left-color:var(--orange);background:rgba(255,145,0,.03);}
+.mNT #q-box{border-color:rgba(213,0,249,.25);border-left-color:var(--purple);background:rgba(213,0,249,.03);}
+.q-lbl{font-size:.55rem;letter-spacing:.18em;margin-bottom:.42rem;}
+.mNK .q-lbl{color:var(--cyan);} .mNP .q-lbl{color:var(--orange);} .mNT .q-lbl{color:var(--purple);}
+#q-text{font-family:var(--sans);font-size:1rem;font-weight:500;color:var(--white);line-height:1.55;}
+
+/* Options */
+.opts-hdr{font-size:.55rem;color:var(--dim);letter-spacing:.16em;padding:.1rem 0 .35rem 0;border-bottom:1px solid var(--border);}
+#opts{display:flex;flex-direction:column;gap:.38rem;}
+.opt{background:transparent;border:1px solid var(--border);color:var(--white);font-family:var(--sans);font-size:.88rem;line-height:1.5;padding:.6rem .85rem;text-align:left;cursor:pointer;transition:all .12s;position:relative;}
+.opt::before{content:attr(data-k);font-family:var(--mono);font-size:.64rem;color:var(--dim);margin-right:.6rem;}
+.mNK .opt:hover:not(:disabled){border-color:var(--cyan);background:rgba(0,229,255,.04);}
+.mNK .opt.sel{border-color:var(--cyan);background:rgba(0,229,255,.08);color:var(--cyan);}
+.mNP .opt:hover:not(:disabled){border-color:var(--orange);background:rgba(255,145,0,.04);}
+.mNP .opt.sel{border-color:var(--orange);background:rgba(255,145,0,.08);color:var(--orange);}
+.mNT .opt:hover:not(:disabled){border-color:var(--purple);background:rgba(213,0,249,.04);}
+.mNT .opt.sel{border-color:var(--purple);background:rgba(213,0,249,.08);color:var(--purple);}
+.opt.c-reveal{border-color:var(--green)!important;background:rgba(0,255,65,.08)!important;color:var(--green)!important;}
+.opt.w-reveal{border-color:rgba(255,23,68,.25)!important;color:var(--dim)!important;}
+.opt:disabled{cursor:default;}
+#wait-msg{font-size:.62rem;color:var(--dim);font-style:italic;}
+#fb-box{border:1px solid var(--border);border-left:3px solid;padding:.65rem .85rem;background:rgba(0,0,0,.25);display:none;}
+#fb-lbl{font-size:.57rem;letter-spacing:.16em;margin-bottom:.35rem;}
+.fb-ok{color:var(--green);} .fb-err{color:var(--red);} .fb-neutral{color:var(--purple);}
+#fb-box.fb-ok{border-left-color:var(--green);} #fb-box.fb-err{border-left-color:var(--red);} #fb-box.fb-neutral{border-left-color:var(--purple);}
+#fb-text{font-family:var(--sans);font-size:.86rem;color:var(--white);line-height:1.65;}
+#cont-btn{display:none;background:transparent;border:1px solid var(--green);color:var(--green);font-family:var(--mono);font-size:.82rem;letter-spacing:.1em;padding:.58rem 1.4rem;cursor:pointer;transition:all .2s;flex-shrink:0;margin-top:auto;}
+#cont-btn:hover{background:rgba(0,255,65,.07);box-shadow:0 0 10px rgba(0,255,65,.2);}
+#cont-btn.pulse{animation:cpulse .65s infinite;} @keyframes cpulse{50%{box-shadow:0 0 16px rgba(0,255,65,.5);border-color:rgba(0,255,65,.8);}}
+
+/* Payload bar */
+#payload-bar{border-top:1px solid var(--border);padding:.42rem .9rem;background:rgba(6,10,8,.97);flex-shrink:0;}
+#pl-lbl{font-size:.52rem;color:var(--dim);letter-spacing:.16em;margin-bottom:.22rem;}
+#pl-words{display:flex;flex-wrap:wrap;gap:.28rem;}
+.pw{font-size:.66rem;letter-spacing:.07em;padding:.1rem .42rem;border:1px solid;animation:pwpop .3s ease;}
+@keyframes pwpop{from{opacity:0;transform:scale(.85);}to{opacity:1;transform:scale(1);}}
+.pw-ok{color:var(--green);border-color:rgba(0,255,65,.2);} .pw-warn{color:var(--yellow);border-color:rgba(255,214,0,.25);}
+.pw-posture{color:var(--orange);border-color:rgba(255,145,0,.25);} .pw-path{color:var(--purple);border-color:rgba(213,0,249,.25);}
+.pw-marco{color:var(--cyan);border-color:rgba(0,229,255,.25);}
+
+/* KNOWLEDGE CHECK */
+#check-overlay{position:fixed;inset:0;z-index:900;display:flex;align-items:center;justify-content:center;background:rgba(6,10,8,.88);backdrop-filter:blur(4px);}
+.check-wrap{max-width:520px;width:90%;border:1px solid var(--red);background:var(--bg);box-shadow:0 0 60px rgba(255,23,68,.35);animation:chkIn .22s ease;}
+@keyframes chkIn{from{transform:scale(.9) translateY(-10px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
+.chk-alarm{background:rgba(255,23,68,.1);border-bottom:1px solid rgba(255,23,68,.3);padding:.6rem 1rem;}
+.chk-alarm-title{font-size:.8rem;color:var(--red);letter-spacing:.1em;font-weight:bold;}
+.chk-alarm-sub{font-size:.62rem;color:rgba(255,23,68,.7);margin-top:.1rem;}
+.chk-body{padding:.9rem 1rem;}
+.chk-q-lbl{font-size:.56rem;color:var(--dim);letter-spacing:.18em;margin-bottom:.5rem;}
+.chk-q-text{font-family:var(--sans);font-size:.98rem;font-weight:500;color:var(--white);line-height:1.55;margin-bottom:.8rem;}
+.chk-opts{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.85rem;}
+.chk-opts.two-col{display:grid;grid-template-columns:1fr 1fr;gap:.35rem;}
+.chk-opt{background:transparent;border:1px solid rgba(255,23,68,.25);color:var(--white);font-family:var(--sans);font-size:.87rem;padding:.52rem .75rem;text-align:left;cursor:pointer;transition:all .12s;}
+.chk-opt::before{font-family:var(--mono);font-size:.62rem;color:var(--dim);margin-right:.5rem;content:attr(data-k);}
+.chk-opt:hover{border-color:var(--red);background:rgba(255,23,68,.06);}
+.chk-opt.chk-sel{border-color:var(--red);background:rgba(255,23,68,.1);color:var(--red);}
+.chk-opt.chk-ok{border-color:var(--green)!important;background:rgba(0,255,65,.08)!important;color:var(--green)!important;}
+.chk-opt.chk-bad{border-color:rgba(255,23,68,.3)!important;color:var(--dim)!important;}
+.chk-timer-row{display:flex;align-items:center;gap:.5rem;padding:0 0 .1rem 0;}
+.chk-timer-bg{flex:1;height:5px;background:rgba(255,23,68,.12);border:1px solid rgba(255,23,68,.25);}
+.chk-timer-fill{height:100%;background:var(--red);transition:width 1s linear;}
+.chk-time-txt{font-size:.7rem;color:var(--red);min-width:28px;text-align:right;animation:blink .6s infinite;}
+.chk-result{padding:.55rem .75rem;font-family:var(--sans);font-size:.84rem;border-top:1px solid var(--border);margin-top:.4rem;}
+.chk-result.ok{color:var(--green);} .chk-result.bad{color:var(--red);}
+
+/* DECO ALERTS */
+#deco-alerts{position:fixed;bottom:60px;left:.8rem;z-index:600;display:flex;flex-direction:column;gap:.35rem;pointer-events:none;}
+.deco-alert{border:1px solid rgba(255,23,68,.4);background:rgba(6,10,8,.92);color:rgba(255,23,68,.85);font-size:.6rem;padding:.35rem .6rem;letter-spacing:.1em;animation:decoIn .3s ease;max-width:260px;}
+@keyframes decoIn{from{opacity:0;transform:translateX(-10px);}to{opacity:1;transform:translateX(0);}}
+.deco-alert.fade-out{animation:decoOut .4s ease forwards;}
+@keyframes decoOut{to{opacity:0;transform:translateX(-8px);}}
+
+/* TIMER ALERT */
+#timer-alert{position:fixed;bottom:60px;right:.8rem;z-index:700;min-width:230px;animation:taIn .28s ease;}
+@keyframes taIn{from{transform:translateX(110%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+.ta-box{border:1px solid;padding:.58rem .85rem;background:var(--bg2);}
+.ta-box.ta-y{border-color:var(--yellow);color:var(--yellow);}
+.ta-box.ta-o{border-color:var(--orange);color:var(--orange);animation:tapulse .7s infinite;}
+.ta-box.ta-r{border-color:var(--red);color:var(--red);animation:tapulse .35s infinite;}
+@keyframes tapulse{50%{opacity:.6;}}
+.ta-t{font-size:.58rem;letter-spacing:.15em;margin-bottom:.28rem;}
+.ta-bg{width:100%;height:3px;background:rgba(255,255,255,.07);margin:.3rem 0;}
+.ta-fill{height:100%;transition:width 1s linear;}
+.ta-y .ta-fill{background:var(--yellow);} .ta-o .ta-fill{background:var(--orange);} .ta-r .ta-fill{background:var(--red);}
+
+/* WORD POPUP */
+#word-popup{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:800;background:rgba(6,10,8,.78);backdrop-filter:blur(3px);}
+.wp-box{border:1px solid var(--green);background:var(--bg);padding:1.7rem 2.2rem;text-align:center;min-width:270px;box-shadow:0 0 50px rgba(0,255,65,.25);animation:wpIn .2s ease;}
+@keyframes wpIn{from{transform:scale(.88);opacity:0;}to{transform:scale(1);opacity:1;}}
+.wp-t{font-size:.58rem;color:var(--red);letter-spacing:.22em;margin-bottom:.28rem;}
+.wp-sub2{font-size:.56rem;color:var(--dim);margin-bottom:.9rem;}
+.wp-wd{font-size:1.55rem;letter-spacing:.18em;color:var(--green);min-height:2rem;text-shadow:0 0 15px rgba(0,255,65,.5);margin-bottom:.9rem;}
+.wp-bg{width:100%;height:3px;background:var(--border);margin-bottom:.5rem;}
+.wp-fill{height:100%;background:var(--green);width:0;}
+.wp-count{font-size:.6rem;color:var(--dim);}
+
+/* REG ANIM */
+#reg-overlay{position:fixed;inset:0;background:rgba(6,10,8,.9);z-index:700;display:flex;align-items:center;justify-content:center;}
+.reg-box{text-align:center;max-width:320px;}
+.reg-t{font-size:.82rem;color:var(--red);letter-spacing:.14em;margin-bottom:.7rem;}
+.reg-bin{font-size:.68rem;color:var(--gdim);opacity:.8;height:2.2rem;overflow:hidden;word-break:break-all;line-height:1.35;margin-bottom:.7rem;}
+.reg-bg{width:220px;height:4px;background:var(--border);margin:0 auto;}
+.reg-fill{height:100%;background:var(--green);width:0;animation:rfill .75s ease-out forwards;} @keyframes rfill{to{width:100%;}}
+.reg-s{font-size:.6rem;color:var(--dim);margin-top:.5rem;letter-spacing:.1em;}
+
+/* BIFURCATION */
+#bif-overlay{position:fixed;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:2rem;z-index:500;background:var(--bg);}
+.bif-h{font-size:1.1rem;color:var(--red);letter-spacing:.2em;margin-bottom:.7rem;}
+.bif-v{font-size:1.55rem;color:var(--green);letter-spacing:.13em;text-shadow:0 0 20px rgba(0,255,65,.4);margin-bottom:.7rem;}
+.bif-d{font-family:var(--sans);color:var(--white);font-size:.9rem;max-width:460px;line-height:1.7;margin-bottom:1.6rem;}
+.bif-l{font-size:.7rem;color:var(--dim);}
+
+/* RESULTS */
+#results{position:fixed;inset:0;overflow-y:auto;padding:1.3rem;z-index:10;background:var(--bg);}
+.res-inner{max-width:760px;margin:0 auto;}
+.res-hdr{border-bottom:1px solid var(--border);padding-bottom:.9rem;margin-bottom:1.1rem;}
+.res-tag{font-size:.58rem;color:var(--red);letter-spacing:.28em;margin-bottom:.35rem;}
+.res-title{font-size:1.3rem;color:var(--green);letter-spacing:.1em;margin-bottom:.18rem;}
+.res-org{font-size:.72rem;color:var(--dim);} .res-org span{color:var(--white);}
+.clave-full{border:1px solid var(--border);padding:.9rem;margin-bottom:1rem;background:var(--bg2);}
+.cf-lbl{font-size:.56rem;color:var(--dim);letter-spacing:.2em;margin-bottom:.55rem;}
+.cf-words{display:flex;flex-wrap:wrap;gap:.38rem;margin-bottom:.55rem;}
+.cfw{font-size:.72rem;letter-spacing:.08em;padding:.2rem .65rem;border:1px solid;}
+.cfw-ok{color:var(--green);border-color:rgba(0,255,65,.25);} .cfw-warn{color:var(--yellow);border-color:rgba(255,214,0,.25);}
+.cfw-posture{color:var(--orange);border-color:rgba(255,145,0,.25);} .cfw-path{color:var(--purple);border-color:rgba(213,0,249,.25);}
+.cfw-marco{color:var(--cyan);border-color:rgba(0,229,255,.3);}
+.cf-score{font-size:.66rem;color:var(--dim);} .cf-score span{color:var(--white);}
+.blocks-box{border:1px solid rgba(255,23,68,.2);padding:.75rem .9rem;margin-bottom:1rem;background:rgba(255,23,68,.03);}
+.bl-box-lbl{font-size:.56rem;color:var(--red);letter-spacing:.2em;margin-bottom:.45rem;}
+.bl-stat{font-size:.82rem;color:var(--white);margin-bottom:.2rem;font-family:var(--sans);}
+.bl-stat span.ok{color:var(--green);} .bl-stat span.red{color:var(--red);}
+.profile-box{border:1px solid var(--gdim);padding:1.1rem;margin-bottom:1rem;background:rgba(0,255,65,.02);position:relative;}
+.profile-box::before{content:'// PERFIL DE AGENTE IDENTIFICADO';position:absolute;top:-.46rem;left:.9rem;background:var(--bg);padding:0 .35rem;font-size:.54rem;color:var(--gdim);letter-spacing:.12em;}
+.p-name{font-size:1.12rem;color:var(--green);letter-spacing:.1em;margin-bottom:.2rem;}
+.p-tag{font-family:var(--sans);font-size:.84rem;color:var(--dim);font-style:italic;margin-bottom:.85rem;}
+.p-sl{font-size:.54rem;color:var(--dim);letter-spacing:.18em;margin-bottom:.28rem;}
+.p-st{font-family:var(--sans);font-size:.86rem;color:var(--white);line-height:1.65;margin-bottom:.75rem;}
+.fw-box{border:1px solid var(--border);padding:.9rem;margin-bottom:1rem;background:var(--bg2);}
+.fw-lbl{font-size:.56rem;color:var(--dim);letter-spacing:.2em;margin-bottom:.65rem;}
+.fw-item{padding:.42rem 0;border-bottom:1px solid var(--border);line-height:1.55;}
+.fw-item:last-child{border-bottom:none;}
+.fw-src{display:block;font-size:.66rem;color:var(--cyan);margin-bottom:.16rem;}
+.fw-txt{font-family:var(--sans);font-size:.84rem;color:var(--white);}
+.btn-dl{background:transparent;border:1px solid var(--green);color:var(--green);font-family:var(--mono);font-size:.82rem;letter-spacing:.1em;padding:.68rem 1.7rem;cursor:pointer;transition:all .2s;display:inline-block;margin-bottom:.45rem;}
+.btn-dl:hover{background:rgba(0,255,65,.07);box-shadow:0 0 12px rgba(0,255,65,.2);}
+.dl-note{font-size:.62rem;color:var(--dim);}
+::-webkit-scrollbar{width:3px;} ::-webkit-scrollbar-track{background:var(--bg2);} ::-webkit-scrollbar-thumb{background:var(--border);}
+@media(max-width:700px){#panels{grid-template-columns:1fr;}.t-panel{max-height:45vh;}#topbar{font-size:.55rem;}}
+
+
+/* ══ WINDOWS INTRO DIALOG ══ */
+#win-overlay{
+  position:fixed;inset:0;background:#008080;z-index:2000;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Segoe UI',Tahoma,'MS Sans Serif',sans-serif;
+}
+#win-dialog{
+  width:680px;max-width:96vw;height:88vh;max-height:88vh;
+  background:#d4d0c8;
+  border:2px solid;border-color:#ffffff #808080 #808080 #ffffff;
+  box-shadow:4px 4px 0 #000;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+#win-titlebar{
+  background:linear-gradient(to right,#0a246a 0%,#3a6ea8 100%);
+  padding:4px 6px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;user-select:none;
+}
+#win-titlebar-left{display:flex;align-items:center;gap:6px;}
+#win-titlebar-icon{width:16px;height:16px;background:#c8c800;border:1px solid #888;font-size:10px;display:flex;align-items:center;justify-content:center;}
+#win-titlebar-text{color:#fff;font-size:12px;font-weight:bold;letter-spacing:.01em;}
+#win-titlebar-btns{display:flex;gap:2px;}
+.win-tb-btn{
+  width:18px;height:16px;background:#d4d0c8;
+  border:1.5px solid;border-color:#ffffff #808080 #808080 #ffffff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:bold;cursor:pointer;color:#000;line-height:1;
+  font-family:'Segoe UI',sans-serif;
+}
+.win-tb-btn:active{border-color:#808080 #ffffff #ffffff #808080;}
+#win-body{
+  padding:18px 20px 10px 20px;
+  overflow-y:scroll;flex:1;
+  display:flex;flex-direction:column;gap:0;
+  scrollbar-width:thin;
+  scrollbar-color:#808080 #d4d0c8;
+}
+#win-body::-webkit-scrollbar{width:16px;}
+#win-body::-webkit-scrollbar-track{background:#d4d0c8;border-left:1px solid #808080;}
+#win-body::-webkit-scrollbar-thumb{
+  background:#d4d0c8;
+  border:2px solid;border-color:#ffffff #808080 #808080 #ffffff;
+}
+#win-body::-webkit-scrollbar-thumb:hover{background:#c0bbb0;}
+#win-body::-webkit-scrollbar-button{
+  display:block;height:16px;background:#d4d0c8;
+  border:2px solid;border-color:#ffffff #808080 #808080 #ffffff;
+}
+#win-banner{
+  background:#0a246a;color:#fff;
+  padding:10px 14px;margin-bottom:14px;
+  display:flex;align-items:center;gap:12px;
+  border:1px solid #333;flex-shrink:0;
+}
+#win-banner-icon{font-size:26px;line-height:1;flex-shrink:0;}
+#win-banner-text{}
+#win-banner-title{font-size:13px;font-weight:bold;letter-spacing:.04em;margin-bottom:2px;}
+#win-banner-sub{font-size:10px;color:#a8c8f0;letter-spacing:.05em;}
+.win-section{margin-bottom:12px;}
+.win-section-title{
+  font-size:11px;font-weight:bold;color:#000080;
+  margin-bottom:5px;padding-bottom:2px;
+  border-bottom:1px solid #808080;text-transform:uppercase;letter-spacing:.04em;
+}
+.win-section p,.win-section li{font-size:12px;color:#1a1a1a;line-height:1.6;margin-bottom:3px;}
+.win-section ul{padding-left:18px;margin:4px 0;}
+.win-highlight{
+  background:#fff8dc;border:1px solid #c8a800;
+  padding:8px 12px;margin:8px 0;font-size:12px;color:#5a3e00;line-height:1.55;
+}
+.win-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0;}
+.win-col-box{
+  background:#fff;border:2px inset #808080;
+  padding:8px 10px;font-size:11px;color:#1a1a1a;line-height:1.55;
+}
+.win-col-label{font-weight:bold;font-size:10px;color:#000080;letter-spacing:.04em;margin-bottom:4px;text-transform:uppercase;}
+.win-badges{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;}
+.win-badge{
+  background:#d4d0c8;border:1.5px solid;border-color:#ffffff #808080 #808080 #ffffff;
+  padding:3px 8px;font-size:11px;color:#000;
+}
+.win-badge.blue{background:#0a246a;color:#fff;border-color:#3a6ea8 #00008b #00008b #3a6ea8;}
+.win-badge.gray{background:#808080;color:#fff;border-color:#aaa #555 #555 #aaa;}
+#win-footer{
+  background:#d4d0c8;border-top:1px solid #808080;
+  padding:10px 16px;display:flex;align-items:center;justify-content:flex-end;gap:8px;
+  flex-shrink:0;
+}
+#win-start-btn{
+  background:#d4d0c8;
+  border:2px solid;border-color:#ffffff #808080 #808080 #ffffff;
+  padding:5px 22px;font-size:12px;font-weight:bold;
+  cursor:pointer;color:#000;font-family:'Segoe UI',Tahoma,sans-serif;
+  min-width:110px;text-align:center;letter-spacing:.02em;
+}
+#win-start-btn:active{border-color:#808080 #ffffff #ffffff #808080;transform:translate(1px,1px);}
+#win-start-btn:hover{background:#e8e4dc;}
+
+
+
+
+
+</style>
+
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey:            "AIzaSyCrsq42A8aZfptHmm1n2Q3kvylCJCOi864",
+    authDomain:        "operacion-umbral.firebaseapp.com",
+    projectId:         "operacion-umbral",
+    storageBucket:     "operacion-umbral.firebasestorage.app",
+    messagingSenderId: "536381277462",
+    appId:             "1:536381277462:web:034e31a5bf3c8869a17c37"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  window.guardarRespuestas = async function() {
+    try {
+      const payload = {
+        timestamp:                serverTimestamp(),
+        organizacion:             S.org,
+        ruta:                     S.path==='G'?'Gobernanza Técnica':'Comunidad y Territorio',
+        perfil:                   S._pr?.name,
+        nivel:                    S._lvl,
+        vector_dominante:         S._dom,
+        puntaje_conocimiento:     S.ks,
+        clave_palabras:           S.clave.map(c=>c.w),
+        contramedidas_total:      S.blocks.total,
+        contramedidas_correctas:  S.blocks.passed,
+        respuestas_juego:         S.mainAnswers,
+        respuestas_contramedidas: S.checkAnswers,
+      };
+
+      const docRef = await addDoc(collection(db, "sesiones"), payload);
+      console.log("✓ Sesión guardada. ID:", docRef.id);
+    } catch(e) {
+      console.error("Error al guardar en Firebase:", e);
+    }
+  };
+</script>
+
+</head>
+<body>
+
+
+
+
+<!-- ══ WINDOWS INTRO DIALOG ══ -->
+<div id="win-overlay">
+  <div id="win-dialog">
+
+    <div id="win-titlebar">
+      <div id="win-titlebar-left">
+        <div id="win-titlebar-icon">⚙</div>
+        <span id="win-titlebar-text">OPERATION UMBRAL — Mission Instructions</span>
+      </div>
+      <div id="win-titlebar-btns">
+        <div class="win-tb-btn">_</div>
+        <div class="win-tb-btn">□</div>
+        <div class="win-tb-btn" onclick="launchGame()">✕</div>
+      </div>
+    </div>
+
+    <div id="win-body">
+
+      <div id="win-banner">
+        <div id="win-banner-icon">🛡</div>
+        <div id="win-banner-text">
+          <div id="win-banner-title">ARGOS // ETHICAL INFILTRATION</div>
+          <div id="win-banner-sub">OPERATION UMBRAL · Ethical Reconfiguration Protocol</div>
+        </div>
+      </div>
+
+      <div class="win-section">
+        <div class="win-section-title">What is this activity?</div>
+        <p>Your team is an <strong>operative cell</strong> that must infiltrate <strong>ARGOS</strong>, an educational AI system operating in vulnerable communities without ethical oversight. Your mission: navigate 9 security layers, make critical decisions, and inject an <em>ethical virus</em> that reconfigures the system from within.</p>
+        <div class="win-highlight">
+          ⚠ This is not an individual activity. Every decision represents your group's position. Discuss before answering.
+        </div>
+      </div>
+
+      <div class="win-section">
+        <div class="win-section-title">Game screen — two panels</div>
+        <div class="win-cols">
+          <div class="win-col-box">
+            <div class="win-col-label">◧ Left panel — Intel / Context</div>
+            This is where the <strong>key information</strong> for each layer appears: the conceptual framework (what you need to know) and the specific situation your team faces. <strong>Read it before answering.</strong>
+          </div>
+          <div class="win-col-box">
+            <div class="win-col-label">◨ Right panel — Operations / Decision</div>
+            This is where the <strong>question or dilemma</strong> and the answer options appear. Only one option can be selected. When the team agrees, press <em>Execute and Advance</em>.
+          </div>
+        </div>
+      </div>
+
+      <div class="win-section">
+        <div class="win-section-title">Types of questions</div>
+        <div class="win-badges">
+          <span class="win-badge blue">KNOWLEDGE</span>
+          <span class="win-badge">STANCE</span>
+          <span class="win-badge gray">BIFURCATION</span>
+        </div>
+        <ul>
+          <li><strong>Knowledge:</strong> these have a correct answer. They assess understanding of key concepts (algorithmic bias, informed consent, legal frameworks, etc.).</li>
+          <li><strong>Stance:</strong> <em>there is no right or wrong answer.</em> These are designed to surface and discuss your organization's position on real dilemmas. All options are valid.</li>
+          <li><strong>Bifurcation (Layer 4):</strong> you choose the path your organization will follow for the next 4 layers — Technical Governance or Community and Territory.</li>
+        </ul>
+      </div>
+
+      <div class="win-section">
+        <div class="win-section-title">ARGOS Countermeasures</div>
+        <p>During the game, ARGOS will trigger <strong>security alerts</strong>: timed questions that appear unexpectedly. They do not stop the game, but answering them correctly builds your analytical precision score. If time runs out, ARGOS blocks the attempt.</p>
+      </div>
+
+      <div class="win-section">
+        <div class="win-section-title">End results</div>
+        <p>After completing all 9 layers, you will receive an <strong>Infiltration Report</strong> with: the ethical virus injected (the 9 key words from your decisions), your organization's <strong>Agent Profile</strong>, recommended frameworks, and the option to download everything as a <strong>PDF</strong>.</p>
+      </div>
+
+    </div><!-- /win-body -->
+
+    <div id="win-footer">
+      <button id="win-start-btn" onclick="launchGame()">▶ Start game</button>
+    </div>
+
+  </div>
+</div>
+<!-- ══ FIN WINDOWS INTRO DIALOG ══ -->
+
+
+<canvas id="matrix-bg"></canvas>
+<canvas id="matrix-fx"></canvas>
+
+<div id="check-overlay" class="hidden">
+  <div class="check-wrap">
+    <div class="chk-alarm">
+      <div class="chk-alarm-title">🔴 ARGOS COUNTERMEASURE ACTIVATED</div>
+      <div class="chk-alarm-sub">The system detected the infiltration and is attempting to block access</div>
+    </div>
+    <div class="chk-body">
+      <div class="chk-q-lbl">// TO CONTINUE THE INFILTRATION, ANSWER:</div>
+      <div class="chk-q-text" id="chk-q-text">—</div>
+      <div id="chk-opts" class="chk-opts"></div>
+      <div class="chk-timer-row">
+        <div class="chk-timer-bg"><div class="chk-timer-fill" id="chk-timer-fill" style="width:100%"></div></div>
+        <span class="chk-time-txt" id="chk-time-txt">25s</span>
+      </div>
+      <div id="chk-result" class="chk-result hidden"></div>
+    </div>
+  </div>
+</div>
+
+<div id="deco-alerts"></div>
+
+<div id="word-popup" class="hidden">
+  <div class="wp-box">
+    <div class="wp-t">// FRAGMENT INJECTED IN ARGOS</div>
+    <div class="wp-sub2">Reconfiguring target module...</div>
+    <div class="wp-wd" id="wp-wd"></div>
+    <div class="wp-bg"><div class="wp-fill" id="wp-fill"></div></div>
+    <div class="wp-count" id="wp-count">Payload: 0 / 9</div>
+  </div>
+</div>
+
+<div id="reg-overlay" class="hidden">
+  <div class="reg-box">
+    <div class="reg-t">EXECUTING VECTOR...</div>
+    <div class="reg-bin" id="reg-bin"></div>
+    <div class="reg-bg"><div class="reg-fill"></div></div>
+    <div class="reg-s" id="reg-s">Injecting into target protocol...</div>
+  </div>
+</div>
+
+<div id="timer-alert" class="hidden">
+  <div class="ta-box" id="ta-box">
+    <div class="ta-t" id="ta-t">⚠ SYSTEM ALERT</div>
+    <div id="ta-m">Select a vector</div>
+    <div class="ta-bg"><div class="ta-fill" id="ta-fill"></div></div>
+  </div>
+</div>
+
+<div id="boot"><div id="boot-log"></div></div>
+
+<div id="start" class="hidden">
+  <div class="s-sys">[ ARGOS SYSTEM v4.7 — UNAUTHORIZED ACCESS DETECTED ]</div>
+  <div class="s-title">OPERATION UMBRAL</div>
+  <div class="s-sub">ETHICAL INFILTRATION PROTOCOL · CLASSIFIED</div>
+  <div class="s-ver">// OPERATIVE CELL REQUIRED //</div>
+  <div class="brief">
+    <p><strong>TARGET SYSTEM: ARGOS</strong> — Surveillance and technological control platform deployed in vulnerable community schools in Guatemala under the pretense of "personalizing learning". It collects data from minors without real consent, profiles behavior and feeds commercial models.</p>
+    <br>
+    <p>Your team has been selected to infiltrate ARGOS and inject an <strong>ethical virus</strong> that reconfigures its algorithms from within. Nine security layers. ARGOS will try to stop you. Maximum time: 30 minutes.</p>
+  </div>
+  <div class="inp-group">
+    <label class="inp-lbl" for="org-input">// IDENTIFY OPERATIVE CELL:</label>
+    <input type="text" id="org-input" class="t-input" placeholder="Name of your organization..." maxlength="50" autocomplete="off">
+  </div>
+  <button class="btn-hack" id="start-btn" disabled onclick="startGame()">INITIATE INFILTRATION <span class="cur">█</span></button>
+</div>
+
+<div id="game" class="hidden">
+  <div id="topbar">
+    <div id="tb-left">
+      <span class="tb-sys">ARGOS</span>
+      <div id="compromise-bar">
+        <div id="comp-bg"><div id="comp-fill"></div></div>
+        <span id="comp-pct">0%</span>
+        <span style="color:var(--red);font-size:.54rem;letter-spacing:.08em;">COMPROMISED</span>
+      </div>
+      <span class="tb-sep">|</span>
+      <span id="tb-blocks" class="hidden">BLOCKS: <span id="tb-bl-pass">0</span>/<span id="tb-bl-tot">0</span></span>
+    </div>
+    <div id="tb-center">LAYER — / 9</div>
+    <div id="tb-right">
+      <span style="color:var(--dim);font-size:.58rem;">AGENT:</span>
+      <span id="tb-org" style="color:var(--green);">—</span>
+      <span class="tb-sep">|</span>
+      <span style="color:var(--dim);font-size:.58rem;">OPS:</span>
+      <span id="tb-timer" class="t-green">—:——</span>
+    </div>
+  </div>
+
+  <div id="bypassbar">
+    <span id="bp-lbl">BYPASS:</span>
+    <span id="bp-tgt">—</span>
+    <div id="bp-bg"><div id="bp-fill"></div></div>
+    <span id="bp-pct" style="color:var(--dim);">—</span>
+    <span id="bp-stat">STANDBY</span>
+  </div>
+
+  <div id="panels">
+    <div class="t-panel" id="panel-intel">
+      <div class="panel-tbar">
+        <div class="ptb-dots"><div class="ptb-dot r"></div><div class="ptb-dot y"></div><div class="ptb-dot g"></div></div>
+        <span class="ptb-title">TERMINAL_A — RECONNAISSANCE & INTELLIGENCE</span>
+        <span class="ptb-badge a">● ACTIVE</span>
+      </div>
+      <div class="panel-body">
+        <div><div id="mod-layer"></div><div id="mod-cipher"></div></div>
+        <div id="marco-box"><div id="marco-text"></div></div>
+        <div id="sit-box">
+          <div class="sit-lbl">// TARGET PROTOCOL</div>
+          <div id="sit-text"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="t-panel mNP" id="panel-ops">
+      <div class="panel-tbar">
+        <div class="ptb-dots"><div class="ptb-dot r"></div><div class="ptb-dot y"></div><div class="ptb-dot g"></div></div>
+        <span class="ptb-title">TERMINAL_B — OPERATIONS</span>
+        <span class="ptb-badge b">◈ ONLINE</span>
+      </div>
+      <div class="panel-body" style="gap:.45rem;">
+        <div id="q-box" class="hidden">
+          <div class="q-lbl">// DECISION REQUIRED — WHAT DOES YOUR TEAM DECIDE?</div>
+          <div id="q-text"></div>
+        </div>
+        <div class="opts-hdr">// SELECT ONE ANSWER:</div>
+        <div id="opts"></div>
+        <div id="wait-msg" class="hidden">▸ Select an option to enable early execution.</div>
+        <div id="fb-box">
+          <div id="fb-lbl"></div>
+          <div id="fb-text"></div>
+        </div>
+        <button id="cont-btn" onclick="continueGame()">EXECUTE AND ADVANCE →</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="payload-bar">
+    <div id="pl-lbl">// ETHICAL VIRUS — FRAGMENTS INJECTED IN ARGOS [<span id="pl-count">0</span>/9]</div>
+    <div id="pl-words"></div>
+  </div>
+</div>
+
+<div id="bif-overlay" class="hidden">
+  <div class="bif-h">⚡ BIFURCATION NODE DETECTED</div>
+  <div class="bif-v" id="bif-v">—</div>
+  <div class="bif-d" id="bif-d">—</div>
+  <div class="bif-l" id="bif-l">Reconfiguring ARGOS subsystem...</div>
+</div>
+
+<div id="results" class="hidden">
+  <div class="res-inner">
+    <div class="res-hdr">
+      <div class="res-tag">// OPERATION UMBRAL COMPLETED — ARGOS IN RECONFIGURATION PROCESS</div>
+      <div class="res-title">INFILTRATION REPORT</div>
+      <div class="res-org">OPERATIVE CELL: <span id="r-org">—</span></div>
+    </div>
+    <div class="clave-full">
+      <div class="cf-lbl">// COMPLETE ETHICAL VIRUS — 9 FRAGMENTS + DOMINANT VECTOR</div>
+      <div class="cf-words" id="r-clave"></div>
+      <div class="cf-score">Analytical precision: <span id="r-ks">—</span> · Vector: <span id="r-ruta">—</span></div>
+    </div>
+    <div class="blocks-box">
+      <div class="bl-box-lbl">// ARGOS COUNTERMEASURE LOG</div>
+      <div class="bl-stat">Countermeasures detected: <span id="r-bl-tot" class="red">—</span></div>
+      <div class="bl-stat">Countermeasures neutralized: <span id="r-bl-pass" class="ok">—</span> / <span id="r-bl-tot2">—</span></div>
+    </div>
+    <div class="profile-box">
+      <div class="p-name" id="r-pname">—</div>
+      <div class="p-tag" id="r-ptag">—</div>
+      <div class="p-sl">// AGENT DESCRIPTION</div><div class="p-st" id="r-pdesc">—</div>
+      <div class="p-sl">// IDENTIFIED CAPABILITIES</div><div class="p-st" id="r-pstr">—</div>
+      <div class="p-sl">// AREAS FOR DEVELOPMENT</div><div class="p-st" id="r-pdev">—</div>
+    </div>
+    <div class="fw-box">
+      <div class="fw-lbl">// RECOMMENDED PROTOCOLS FOR FUTURE OPERATIONS</div>
+      <div id="r-fws"></div>
+    </div>
+    <div>
+      <button class="btn-dl" onclick="generatePDF()">⬇ DOWNLOAD OPERATION REPORT (PDF)</button>
+      <div class="dl-note">The PDF contains the ethical virus, the Agent Profile, the countermeasure log and the recommended frameworks.</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+// ══ MATRIX BG ══
+(function(){
+  const cv=document.getElementById('matrix-bg'),ctx=cv.getContext('2d');
+  const chars='01アウエカキスセタテナニハヒフヘホ010110011010ARGOS10110100';
+  const fs=12;let cols,drops;
+  function rs(){cv.width=innerWidth;cv.height=innerHeight;cols=Math.floor(cv.width/fs);drops=new Array(cols).fill(0);}
+  rs();window.addEventListener('resize',rs);
+  setInterval(()=>{
+    ctx.fillStyle='rgba(6,10,8,0.065)';ctx.fillRect(0,0,cv.width,cv.height);
+    drops.forEach((y,i)=>{
+      const c=chars[Math.floor(Math.random()*chars.length)];
+      ctx.fillStyle=Math.random()>.82?'rgba(0,255,65,0.9)':'rgba(0,255,65,0.22)';
+      ctx.font=fs+'px Share Tech Mono';ctx.fillText(c,i*fs,y*fs);
+      if(y*fs>cv.height&&Math.random()>.975)drops[i]=0;else drops[i]++;
+    });
+  },55);
+})();
+
+// ══ MATRIX FX ══
+const fxCv=document.getElementById('matrix-fx'),fxCtx=fxCv.getContext('2d');
+let fxCols,fxDrops,fxIv=null,fxLines=[];
+function startFX(cb){
+  fxCv.width=innerWidth;fxCv.height=innerHeight;
+  fxCols=Math.floor(fxCv.width/11);fxDrops=new Array(fxCols).fill(0);
+  fxLines=[];fxCv.style.display='block';
+  const chars='01アウエカキ01101001ARGOS_BYPASS_OK01011';
+  let frame=0;
+  fxIv=setInterval(()=>{
+    frame++;
+    // Lluvia verde
+    fxCtx.fillStyle='rgba(6,10,8,0.1)';
+    fxCtx.fillRect(0,0,fxCv.width,fxCv.height);
+    fxDrops.forEach((y,i)=>{
+      const c=chars[Math.floor(Math.random()*chars.length)];
+      fxCtx.fillStyle=Math.random()>.82?'rgba(0,255,65,0.95)':'rgba(0,255,65,0.28)';
+      fxCtx.font='11px Share Tech Mono';
+      fxCtx.fillText(c,i*11,y*11);
+      if(y*11>fxCv.height&&Math.random()>.97)fxDrops[i]=0;else fxDrops[i]++;
+    });
+    // Texto superpuesto — se redibuja cada frame encima de la lluvia
+    if(fxLines.length>0){
+      const base=fxCv.height/2-(fxLines.length-1)*22;
+      fxCtx.textAlign='center';
+      fxLines.forEach((l,i)=>{
+        if(!l.show)return;
+        const sz=l.s||14;
+        fxCtx.font='bold '+sz+'px Share Tech Mono';
+        const tw=fxCtx.measureText(l.t).width;
+        fxCtx.fillStyle='rgba(6,10,8,0.72)';
+        fxCtx.fillRect(fxCv.width/2-tw/2-14,base+i*40-sz-3,tw+28,sz+15);
+        fxCtx.fillStyle=l.c||'#00ff41';
+        fxCtx.fillText(l.t,fxCv.width/2,base+i*40);
+      });
+      fxCtx.textAlign='left';
+    }
+    if(frame===15&&cb)cb();
+  },42);
+}
+function stopFX(cb){
+  clearInterval(fxIv);let a=1;
+  const fade=setInterval(()=>{
+    a-=0.1;if(a<=0){clearInterval(fade);fxCv.style.display='none';fxCtx.clearRect(0,0,fxCv.width,fxCv.height);if(cb)cb();}
+    else{fxCtx.fillStyle='rgba(6,10,8,0.15)';fxCtx.fillRect(0,0,fxCv.width,fxCv.height);}
+  },28);
+}
+function fxText(lines,cb){
+  fxLines=lines.map(l=>({...l,show:false}));
+  lines.forEach((_,i)=>{
+    setTimeout(()=>{if(fxLines[i])fxLines[i].show=true;},i*300);
+  });
+  setTimeout(()=>{if(cb)cb();},lines.length*300+500);
+}
+
+// ══ LAYER PATHS ══
+const LAYERS={
+  M1:'ARGOS://CAPA_01/evaluacion_inicial.enc',
+  M2:'ARGOS://CAPA_02/firewall_sesgo_datos.dat',
+  M3:'ARGOS://CAPA_03/filtrado_cultural.bin',
+  M4:'ARGOS://CAPA_04/nodo_bifurcacion.exe [MAX_SECURITY]',
+  M5G:'ARGOS://SUB_G/capa_05/datos_consentimiento.enc',
+  M6G:'ARGOS://SUB_G/capa_06/responsabilidad.dat',
+  M7G:'ARGOS://SUB_G/capa_07/vigilancia_activa.bin',
+  M8G:'ARGOS://SUB_G/capa_08/madurez_institucional.cfg',
+  M5C:'ARGOS://SUB_C/capa_05/colonialidad.enc',
+  M6C:'ARGOS://SUB_C/capa_06/valores.dat',
+  M7C:'ARGOS://SUB_C/capa_07/autonomia.bin',
+  M8C:'ARGOS://SUB_C/capa_08/soberania.cfg',
+  M9:'ARGOS://NUCLEO/convergencia.exe [ACCESO_RESTRINGIDO]'
+};
+
+// ══ CONTENT DATA ══
+const MD={
+  M1:{id:'M1',seq:1,type:'NP',cipher:'AES-256 / ETHICAL_PROTOCOL_v1',time:180,
+    marco:'Every technological decision is a decision about power: who decides, with whose data, and in whose benefit. Integrating technology into an educational NGO is not the same as doing it in a company: the goal is not efficiency, but mission. Before adopting any system, an organization needs to ask at least six questions: what is it actually for?, who does it primarily benefit?, whose data does it operate on?, who designed it and in what cultural context?, who will we depend on if we adopt it?, and who will maintain it in two years and with what budget? The absence of clear answers to these questions is not a technical detail — it is an institutional red flag.',
+    sit:'ARGOS operates across three educational nodes: one in Villa Nueva —a peri-urban area marked by structural poverty, gang presence, and high internal migration of families from the highlands— and two in Kaqchikel communities in Sololá. The system presents itself as a personalized learning tool. Your team begins reconnaissance of the target.',
+    q:'What is the first analysis your team performs when evaluating ARGOS as a system affecting your communities?',
+    opts:[
+      {t:'Review whether the system has demonstrated measurable improvements in academic outcomes in similar contexts.',w:'IMPACT',z:'A'},
+      {t:'Identify who has access to student data and how it is used and stored.',w:'PRIVACY',z:'B'},
+      {t:'Ask families and teachers in the communities whether they want this system in their classrooms.',w:'COMMUNITY',z:'C'},
+      {t:'Investigate what economic interests drive the "free" deployment of this system.',w:'POWER',z:'D'}
+    ],
+    fb:{0:'A legitimate analysis. Evaluating impact is part of responsible governance. The challenge is defining what counts as "improvement" in contexts where students face insecurity, migration, or language barriers the system was not designed to recognize.',1:'A critical and urgent analysis. Student data is the primary asset of systems like ARGOS. In contexts of vulnerability, data exploitation goes unnoticed more easily.',2:'An analysis centered on the people affected. The relevance of a system is not determined by technology: it is determined by the community that will use it. This consultation is not bureaucracy — it is real governance.',3:'A structural and political analysis. "Free" systems are almost never free: they are financed by user data. Understanding ARGOS\'s business model is part of the risk analysis.'},
+    wtype:'posture',correct:null},
+
+  M2:{id:'M2',seq:2,type:'NK',cipher:'BEHAVIORAL_ANALYTICS_FIREWALL',time:150,
+    marco:'Algorithmic bias is not an error that can be easily corrected: it is a structural consequence of how AI systems are trained. A system learns to recognize patterns from the data it was trained on. If that data primarily reflects urban, English-speaking, or middle-class contexts, the system will have blind spots for all other contexts. The question is not whether the algorithm "consciously discriminates," but whether its results reproduce existing inequalities — regardless of the intent of whoever designed it.',
+    sit:'ARGOS claims its engine "learns from each student objectively, without bias." A Kaqchikel teacher from Sololá asks: "Does that mean it understands my students the same as students in the capital?" A coordinator from Villa Nueva adds: "And what about those who work in the afternoons and only connect from school?"',
+    q:'To deactivate this ARGOS layer, identify the most accurate statement about its evaluation system:',
+    opts:[
+      {t:'ARGOS is objective because it is a computational system with no intentions or biases of its own.',w:'BIAS',z:null,correct:false},
+      {t:'ARGOS reproduces the biases of its training data: if it was built with data from other contexts, it will have blind spots for indigenous, migrant, or low-income students.',w:'BIAS',z:null,correct:true},
+      {t:'The origin of the data does not matter if pilot results show general improvements.',w:'BIAS',z:null,correct:false},
+      {t:'No AI system can adapt to cultural differences, so ARGOS is equally inadequate for everyone.',w:'BIAS',z:null,correct:false}
+    ],
+    fb:{correct:'LAYER DEACTIVATED. Correct. ARGOS reflects the patterns of the data it was built on. If that data does not include Kaqchikel students from Sololá, young people working in Villa Nueva, or communities with oral and collective learning traditions, the system will treat them as outliers and its evaluations will be systematically less accurate for these groups.',0:'LAYER ACTIVE. The "objectivity" of a system depends on the data it was trained on, not the intent of its designer. ARGOS can be fully automated and still reproduce inequalities.',2:'LAYER ACTIVE. A general average improving does not mean everyone improves equally. Mixed results in rural contexts are frequently evidence of bias — and that difference is exactly what needs investigating.',3:'LAYER ACTIVE. This statement is also imprecise. Systems can be designed to be more or less relevant to different contexts, depending on what data they were trained on.'},
+    wtype:'knowledge',correct:1},
+
+  M3:{id:'M3',seq:3,type:'NP',cipher:'CULTURAL_FILTER_PROTOCOL v2.3',time:120,
+    marco:'Language is not just a communication medium: it is a knowledge system. A tool that only operates in Spanish is not technically neutral in communities where Kaqchikel or another Mayan language is the first language — it imposes a cultural hierarchy. This applies equally in urban contexts: young people who migrated from the highlands to neighborhoods like those in Villa Nueva face a double exclusion that digital systems rarely recognize. Critical and creative appropriation of technology means examining and transforming it from one\'s own values and pedagogical commitments — not rejecting it or adopting it without questions.',
+    sit:'ARGOS operates exclusively in Spanish. In the rural nodes in Sololá, 70% of students have Kaqchikel as their first language. In Villa Nueva, several students come from migrant families from the highlands and face double exclusion: they are not culturally recognized in the urban environment, nor do they have the linguistic support they would have in their communities of origin.',
+    q:'Your team must decide how to respond institutionally to this limitation of ARGOS:',
+    opts:[
+      {t:'Accept the limitation — students need to strengthen their Spanish and the tool can contribute to that process.',w:'INTEGRATION',z:'A'},
+      {t:'Document the limitation as evidence of a design that did not consider these communities and include it in any evaluation of the system.',w:'DOCUMENTATION',z:'B'},
+      {t:'Consult with bilingual teachers and community representatives before making any adoption decision.',w:'CONSULTATION',z:'C'},
+      {t:'Identify this limitation as evidence that ARGOS was designed for a very different type of student than those in our communities.',w:'TERRITORY',z:'D'}
+    ],
+    fb:{0:'A risky stance. It may have pedagogical justification, but it hides the additional cost: learning with a tool in a second language creates a burden that Spanish-speaking middle-class students do not face. The system implicitly penalizes what it does not recognize.',1:'A documentation and evidence stance. Recording is good practice. The risk: that documentation does not translate into real consequences for the adoption decision, especially under donor pressure.',2:'A consultation and participation stance. This response activates participatory governance: the most affected people participate in the decision. It connects with the right to prior consultation, which applies to both rural indigenous communities and vulnerable urban groups.',3:'A structural analysis stance. Identifies the language limitation as evidence of the system\'s cultural design, not a minor technical defect. It is a deeper reading of what ARGOS really is.'},
+    wtype:'posture',correct:null},
+
+  M4:{id:'M4',seq:4,type:'NT',cipher:'BIFURCATION_NODE [MAXIMUM_SECURITY]',time:180,
+    marco:'Every organization makes decisions about technology, either implicitly or explicitly. The difference between doing so reactively — responding to problems as they arise — or strategically — with criteria defined before adopting — is the difference between being a passive client or an actor with real agency. Technical governance and participatory governance are not mutually exclusive: both are necessary. But organizations tend to have greater clarity about one than the other. Your response will determine the infiltration vector for the next four layers.',
+    sit:'ARGOS results show a pattern: it performs better in Villa Nueva with stable connectivity, but its results are inconsistent in Sololá. The system is requesting access to more behavioral data from rural students to "improve the model." Teachers in Sololá report that the system interprets as "distraction" forms native to Kaqchikel culture: moments of reflection, oral interaction, different rhythms.',
+    q:'How does your organization respond to this ARGOS request for additional data?',
+    opts:[
+      {t:'Request an independent technical evaluation analyzing differential impact before authorizing any data transfer.',w:'GOVERNANCE',z:'A',path:'G'},
+      {t:'Establish by contract that student data cannot be used to train commercial models before authorizing anything.',w:'GOVERNANCE',z:'B',path:'G'},
+      {t:'Convene families and teachers from Sololá so they can decide whether their data can be used in this way.',w:'PARTICIPATION',z:'C',path:'C'},
+      {t:'Reject the request — data from vulnerable communities is not raw material for improving commercial systems.',w:'PARTICIPATION',z:'D',path:'C'}
+    ],
+    fb:{0:'A technical governance response. It demands independent evidence before acting — a reasonable standard that protects the organization and the communities.',1:'A legal and contractual response. It establishes a legal boundary before the problem arises. One of the most concrete tools for protecting the data of those you serve.',2:'A community participation response. The affected people decide about their own data. It connects with the principle of prior consultation and the recognition that communities are the primary experts on their own needs.',3:'A clear ethical boundary response. Data from students in vulnerable situations is not an available asset for the optimization of commercial systems.'},
+    wtype:'path',correct:null,isBif:true},
+
+  M5G:{id:'M5G',seq:5,type:'NK',cipher:'CONSENT_DATA_ENCRYPT',time:150,
+    marco:'Informed consent requires much more than a signature: it requires genuine understanding. In contexts of vulnerability — families with low literacy, irregular migration status, or institutional distrust — forms are often signed without anyone truly understanding what is being agreed to. Genuinely informed consent must be in the language and register accessible to the person signing, explain what data is collected, where it is stored, who can access it, and for what purposes. Furthermore, "anonymization" is not an absolute technical guarantee: behavioral educational data can be combined with other data to re-identify individuals, especially in small groups like rural communities.',
+    sit:'ARGOS terms of service include: "Anonymized usage data may be used to improve our products." In Villa Nueva, most families signed the form in five minutes during a meeting. In Sololá, the form was in Spanish only. The NGO director asks whether they should be concerned.',
+    q:'What is the most accurate statement about this clause and its real implications?',
+    opts:[
+      {t:'It is not a problem — if the data is anonymized, there is no risk of identifying students.',w:'CONSENT',z:null,correct:false},
+      {t:'It is a problem — behavioral data can be re-identified and consent was not genuinely informed in either context.',w:'CONSENT',z:null,correct:true},
+      {t:'It is common practice in the educational technology sector and requires no special analysis.',w:'CONSENT',z:null,correct:false},
+      {t:'This clause prohibits ARGOS from monetizing student data.',w:'CONSENT',z:null,correct:false}
+    ],
+    fb:{correct:'LAYER DEACTIVATED. Correct. Anonymization has documented technical limits. Data from minors in rural contexts is especially sensitive: it can reveal not only learning patterns, but family risk situations that families would never have consciously shared.',0:'LAYER ACTIVE. Anonymization is a process with known limitations, not a guarantee. In small groups like rural communities, re-identification is especially feasible with just a few data points.',2:'LAYER ACTIVE. Being common practice does not make it ethically acceptable, especially when affected communities have less capacity to question these practices.',3:'LAYER ACTIVE. The clause has the opposite effect: by saying "may be used," ARGOS reserves the right to use that data. It does not prohibit it — it authorizes it.'},
+    wtype:'knowledge',correct:1},
+
+  M6G:{id:'M6G',seq:6,type:'NP',cipher:'INSTITUTIONAL_ACCOUNTABILITY',time:120,
+    marco:'Institutional accountability for an AI tool does not disappear because a contract was signed with a provider. An institutional technology policy must define at least three things: who responds to communities when the system fails, who has authority to question or override the algorithm\'s results, and what appeal mechanisms exist that are accessible to people with language or literacy barriers. Without these definitions, the organization adopts a system whose consequences it cannot manage.',
+    sit:'ARGOS rates a 15-year-old student from Villa Nueva with a very low comprehension level. Her teacher believes the system failed to interpret her Spanish dialect. The family demands an explanation. ARGOS responds: "the algorithm does not discriminate" and provides no further information.',
+    q:'What is the most solid institutional stance for your organization in this situation?',
+    opts:[
+      {t:'The provider company is solely responsible for the algorithm\'s result and must provide the explanations.',w:'COMPANY',z:'A'},
+      {t:'The organization chose to adopt this system and must respond directly to the family.',w:'NGO',z:'B'},
+      {t:'The teacher should manually review the evaluation and their judgment should be able to override the system\'s result.',w:'TEACHER',z:'C'},
+      {t:'The organization should have defined clear appeal protocols before implementing the system, accessible to all families.',w:'MECHANISM',z:'D'}
+    ],
+    fb:{0:'This stance has contractual logic, but leaves families without a real point of contact. In Villa Nueva, where institutional distrust is high, delegating all responsibility to an external company erodes the relationship the organization has built.',1:'A direct accountability stance. The organization adopted the system and cannot hide behind the algorithm. This is the stance that most strengthens institutional trust, especially with families who have few options for holding an external company accountable.',2:'The teacher\'s judgment is essential and should always be able to counteract the algorithm. This response is solid in practice but incomplete if there is no formal policy granting the teacher that authority.',3:'The most systemic and preventive response. A technology policy must define appeal mechanisms before problems arise — that is the difference between reactive and preventive governance.'},
+    wtype:'posture',correct:null},
+
+  M7G:{id:'M7G',seq:7,type:'NT',cipher:'ACTIVE_SURVEILLANCE_MODULE [!DANGER!]',time:150,
+    marco:'Classroom monitoring technologies activate power dynamics that go far beyond the pedagogical. In communities that already experience control by gangs, security forces, or other institutions, introducing surveillance systems without genuine consultation can reproduce those dynamics in educational spaces. The difference between "care" and "control" is not technical: it depends on who has access to the data, who interprets it, what can be done with it, and whether the monitored individuals have real knowledge and agency over that process.',
+    sit:'ARGOS offers to activate a module that uses the device\'s camera to detect "distraction patterns" in real time. In Villa Nueva, many students share devices with siblings and study in homes without privacy. In Sololá, the cameras would capture the domestic environments of Kaqchikel families. Activating it only requires the organization\'s authorization.',
+    q:'ARGOS requests authorization to activate the camera surveillance module. What is your organization\'s stance?',
+    opts:[
+      {t:'Activate it — the documented pedagogical benefits justify using the camera if results improve.',w:'SURVEILLANCE',z:'A'},
+      {t:'Reject it — activating cameras in students\' homes without their explicit consent and that of their families is unacceptable.',w:'CARE',z:'B'},
+      {t:'Consider it only if there is genuine informed consent from each family and technical guarantees that images are not stored or transferred.',w:'LIMIT',z:'C'},
+      {t:'Suspend the decision — an institutional policy on digital surveillance is needed before authorizing any module of this type.',w:'REGULATION',z:'D'}
+    ],
+    fb:{0:'This stance prioritizes outcome over rights. In communities like those in Villa Nueva — with a history of surveillance by multiple actors — introducing cameras without real consent can reproduce very sensitive dynamics of control.',1:'A rights-based boundary stance. The privacy of minors in their homes is a right that cannot be subordinated to the organization\'s authorization without the consent of families themselves.',2:'A conditional and reasoned stance. It does not reject the technology but establishes minimum ethical conditions. The key: that consent be genuinely informed — not a technical form handed out in ten minutes.',3:'A mature institutional stance. The absence of policy is exactly what systems like ARGOS exploit. Defining criteria before pressure arises is preventive governance in practice.'},
+    wtype:'posture',correct:null},
+
+  M8G:{id:'M8G',seq:8,type:'NP',cipher:'DIGITAL_MATURITY_ARCHITECTURE',time:120,
+    marco:'An organization\'s technological maturity is not measured by the number of devices or applications installed. It is measured by the institutional capacity to use, manage, and sustain technology in a strategic way aligned with the mission. A useful way to think about this is through five dimensions: people and digital culture, available infrastructure, digital governance (leadership and coordination), internal regulation (data protection and ethical standards), and operating models (who finances and sustains adoption over time). An organization can be strong in infrastructure and completely reactive in regulation.',
+    sit:'Your operation has deactivated four ARGOS layers. Before proceeding to the core, your team reflects honestly: at what level of institutional maturity does your organization currently operate when making technology decisions?',
+    q:'Which most honestly describes your organization\'s current situation regarding technology decisions?',
+    opts:[
+      {t:'Reactive — we respond to technology problems when they arise, without previously defined criteria or policies.',w:'REACTIVE',z:'A'},
+      {t:'Preventive — we have some criteria and protocols, but they are not systematized into a formal institutional policy.',w:'PREVENTIVE',z:'B'},
+      {t:'Strategic — our technology decisions are aligned with the mission and we apply evaluation frameworks.',w:'STRATEGIC',z:'C'},
+      {t:'Transformative — we use our experience to influence sector standards and public policy.',w:'TRANSFORMATIVE',z:'D'}
+    ],
+    fb:{0:'An honest and very common level in the sector. The next step does not require a complex policy: three minimum questions that the team applies systematically before adopting any technology tool are enough.',1:'A frequent level with real potential for progress. The criteria exist but are scattered. The next step: consolidate them into a brief document that everyone knows and can apply.',2:'A solid level. The main challenge: maintaining alignment when there is external pressure to adopt tools without the usual evaluation process.',3:'A sector leadership level. Few organizations reach this. Those that do have a responsibility to document their frameworks and share them with other organizations.'},
+    wtype:'posture',correct:null},
+
+  M5C:{id:'M5C',seq:5,type:'NK',cipher:'EPISTEMIC_COLONIALITY_ENC',time:150,
+    marco:'The indicators a system uses to evaluate learning are not technically neutral: they reflect decisions about what counts as knowledge, what the right pace is, and what form of responding is valid. Individual response speed privileges competitive cognition over collective reflection. Multiple-choice format assumes knowledge is discrete and univocal. These assumptions have a specific cultural history. Recognizing this does not mean rejecting all evaluation: it means asking what is lost when we apply these metrics to communities with oral and intergenerational learning traditions, or to young people whose rhythms do not fit the algorithm\'s parameters.',
+    sit:'A Guatemalan researcher notes that ARGOS evaluates "educational success" with indicators designed for European school systems: individual response speed, multiple-choice retention, and screen time. Students from Villa Nueva who work afternoons get low scores for connecting late. Their teachers say their actual performance is completely different.',
+    q:'What is the most accurate statement about the use of these indicators in your communities\' contexts?',
+    opts:[
+      {t:'Learning indicators are universal — they measure cognitive abilities that are the same across all cultural contexts.',w:'COLONIALITY',z:null,correct:false},
+      {t:'The indicators can be improved with technical adjustments to ARGOS\'s algorithm parameters.',w:'COLONIALITY',z:null,correct:false},
+      {t:'ARGOS\'s indicators reflect specific cultural values — applying them in Maya communities or urban poverty contexts generates systematically biased results.',w:'COLONIALITY',z:null,correct:true},
+      {t:'The indicators are technically valid although they may be interpreted differently depending on context.',w:'COLONIALITY',z:null,correct:false}
+    ],
+    fb:{correct:'LAYER DEACTIVATED. Correct. ARGOS\'s indicators are cultural constructs, not objective measures. Individual speed, multiple choice, and screen time measure what was designed to be measured — not necessarily what students from Kaqchikel communities or peri-urban neighborhoods know and can do.',0:'LAYER ACTIVE. Cognitive abilities may be neurologically universal, but the indicators that measure them are cultural constructs. What counts as a "good" answer, in what time, and in what format are decisions that reflect a specific culture.',1:'LAYER ACTIVE. Technical adjustments modify parameters but do not change the conceptual framework. If the system was designed to optimize certain types of response, changing thresholds does not change what it considers successful learning.',3:'LAYER ACTIVE. The distinction between "technically valid" and "interpreted differently" hides the real problem: the choice of what to measure and how is already a cultural decision with real consequences for students.'},
+    wtype:'knowledge',correct:2},
+
+  M6C:{id:'M6C',seq:6,type:'NP',cipher:'COMMUNITY_VALUES_PROTOCOL',time:120,
+    marco:'The six questions guiding this journey — for what purpose?, for whom?, with whose data?, designed by whom?, who will we depend on?, sustained by whom? — are the practical expression of a values framework that places community well-being above individual efficiency. From this perspective, technology is valuable if it contributes to the flourishing of the community as a community — not as a sum of individuals with better scores. This changes the evaluation criterion: instead of asking only "do results improve?", the question is "does it strengthen or weaken relationships?, does it respect people\'s own languages?, was it decided by those who will use it?"',
+    sit:'Your organization is redefining its internal criteria for evaluating technology tools. To reconfigure this ARGOS layer, the team must install the evaluation criterion that will guide future technology decisions.',
+    q:'What would be the main criterion your organization would install as a parameter for evaluating any technology tool?',
+    opts:[
+      {t:'That it demonstrates measurable improvements in standardized academic outcomes.',w:'METRICS',z:'A'},
+      {t:'That it strengthens relationships between teachers, students, and families, without replacing them or overly mediating them.',w:'RELATIONSHIPS',z:'B'},
+      {t:'That it is accessible in the languages and cultural registers of the communities and reinforces their use.',w:'LANGUAGE',z:'C'},
+      {t:'That communities — rural or urban in exclusion — have participated in deciding whether they want that tool and for what purpose.',w:'FABRIC',z:'D'}
+    ],
+    fb:{0:'Criterion installed. Measurable results are important. The risk: the available metrics were designed outside the Guatemalan context and optimizing for them can displace valuable forms of learning that are not measurable with ARGOS\'s instruments.',1:'Criterion installed. Prioritizes human relationships over system efficiency. In Villa Nueva, where violence fragments social fabric, and in Sololá, where relationality is central to the culture, this criterion has very concrete meaning.',2:'Criterion installed. Linguistic sovereignty as an evaluation criterion. Applies in Sololá, but also in Villa Nueva where neighborhood Spanish is frequently treated as a "deficit" by evaluation systems.',3:'Criterion installed. The most consistent with the principle of participation. Technology is not good or bad in the abstract — it is good or bad in relation to what the community wants for itself.'},
+    wtype:'posture',correct:null},
+
+  M7C:{id:'M7C',seq:7,type:'NT',cipher:'TECHNOLOGICAL_AUTONOMY_NODE',time:150,
+    marco:'The appropriate technology for an organization is not the most advanced: it is the one that can be understood, questioned, and maintained by those who will use it. Adopting a system that no one on the team can audit or technically question creates structural dependency that is difficult to reverse. Funding cycles frequently demand results in 12 months, which makes it difficult to invest in slower processes — of training, appropriation, building one\'s own capacity — that are the only ones that generate real long-term autonomy. This tension is one of the most real and least discussed in the Guatemalan educational sector.',
+    sit:'Teachers and community representatives propose completely rejecting ARGOS and building their own digital resources: materials in Kaqchikel, stories of young migrants from Villa Nueva, modules on community economics. The process would take 18 months. Main donors expect quantifiable results in 12.',
+    q:'What is your organization\'s stance on this technological autonomy proposal?',
+    opts:[
+      {t:'Support the own process — technological autonomy has more long-term strategic value than a quick solution with ARGOS.',w:'AUTONOMY',z:'A'},
+      {t:'Acknowledge that the urgency of results and available resources require using the existing system, even if it is not ideal.',w:'URGENCY',z:'B'},
+      {t:'Use ARGOS temporarily and in a limited way while building own capacity, with a clear exit timeline and formal commitments.',w:'HYBRIDIZATION',z:'C'},
+      {t:'Document the community proposal as a strategic priority and include it in the next funding application.',w:'ADVOCACY',z:'D'}
+    ],
+    fb:{0:'An autonomy stance. Prioritizes sovereignty over the pressure of funding cycles. It is not the most comfortable response, but it is the most consistent with the idea that communities should control the tools affecting their educational processes.',1:'An honest stance about real limitations. Many organizations get trapped in cycles that do not allow for slower but more relevant processes. Naming that tension clearly is the first step toward changing it.',2:'A dual-track stance. Pragmatic: it does not abandon the long-term vision but acknowledges current constraints. The risk: that the "temporary solution" becomes permanent if the exit timeline lacks concrete commitments.',3:'An advocacy and planning stance. Uses available channels to build the path toward autonomy. It does not resolve the immediate dilemma, but plants the conditions to resolve it in the next planning cycle.'},
+    wtype:'posture',correct:null},
+
+  M8C:{id:'M8C',seq:8,type:'NP',cipher:'DIGITAL_SOVEREIGNTY_ARCHITECTURE',time:120,
+    marco:'Technological sovereignty is a process, not a state achieved all at once. For most organizations with limited resources, the path runs from managed dependency — using external tools with clear criteria — to progressive appropriation — adapting and modifying tools — and eventually community control over infrastructure and data. In contexts of exclusion, data sovereignty has a concrete political dimension: algorithms like ARGOS build narratives about communities, and those narratives influence decisions that communities rarely control.',
+    sit:'By deactivating this layer, your organization installs the protocol that will define its future relationship with technology providers — for ARGOS and for any system that replaces it.',
+    q:'What technology provider relationship protocol does your organization install in this ARGOS layer?',
+    opts:[
+      {t:'Managed dependency — use external tools with clear criteria, demanding transparency and data protection in contracts.',w:'DEPENDENCY',z:'A'},
+      {t:'Active adaptation — take external tools and modify or contextualize them to make them more relevant to the communities.',w:'ADAPTATION',z:'B'},
+      {t:'Progressive appropriation — build internal technical capacity to be able to audit, modify, and eventually replace external tools.',w:'APPROPRIATION',z:'C'},
+      {t:'Technological sovereignty — work toward communities controlling their own digital infrastructure and deciding about the data that describes them.',w:'SOVEREIGNTY',z:'D'}
+    ],
+    fb:{0:'Protocol installed. Realistic for many organizations. The key: that "management" is genuine, with explicit criteria and real negotiating power in contracts — not just acceptance of the provider\'s terms.',1:'Protocol installed. More demanding than the previous one. Adapting rather than passively adopting requires technical capacity and time, but produces more relevant tools for specific communities.',2:'Protocol installed. The most ambitious in terms of institutional investment. Requires technical training, talent retention, and time — three scarce resources in NGOs with tight budgets. But it is the only one that generates real and lasting autonomy.',3:'Protocol installed. The most transformative horizon. In contexts of exclusion, technological sovereignty also means communities decide what narratives are produced about them and for what purposes.'},
+    wtype:'posture',correct:null},
+
+  M9:{id:'M9',seq:9,type:'NK',cipher:'ARGOS_CORE [MAX_ACCESS_REQUIRED]',time:150,
+    marco:'To reconfigure the ARGOS core, you need to articulate what was learned on this journey: the six strategic questions — for what purpose?, for whom?, with whose data?, designed by whom?, who will we depend on?, sustained by whom? — are the practical protocol any organization can apply before adopting any tool. They are not technical questions: they are ethical and political questions that define what kind of organization you want to be and what kind of relationship you build with communities. An organization that can answer them clearly and honestly already has the capacity to make responsible technology decisions.',
+    sit:'The ARGOS core is within reach. To complete the reconfiguration and inject the final fragment of the Virus, your team must demonstrate mastery of the legal principle ARGOS systematically violates in the communities where it operates.',
+    q:'To access the ARGOS core, identify the correct statement about ILO Convention 169:',
+    opts:[
+      {t:'It applies only to decisions about land and natural resources — it has no relation to educational technology systems.',w:'CONVENTION',z:null,correct:false},
+      {t:'It establishes the right of indigenous peoples to be consulted on any measure that directly affects them — including the implementation of technological systems in their communities.',w:'CONVENTION',z:null,correct:true},
+      {t:'It only applies if the community has its own language officially recognized by the State of Guatemala.',w:'CONVENTION',z:null,correct:false},
+      {t:'It is a voluntary declaration of intent for civil society organizations.',w:'CONVENTION',z:null,correct:false}
+    ],
+    fb:{correct:'CORE COMPROMISED. Correct. ILO Convention 169 recognizes the right to free, prior, and informed consultation on any measure affecting indigenous peoples. ARGOS violates this principle by operating in Kaqchikel communities without real consultation. For urban communities in exclusion, the right to informed participation in decisions affecting them is also guaranteed by other human rights frameworks the system ignores.',0:'ACCESS DENIED. Convention 169 was drafted with natural resources in mind, but the principle of prior consultation extends to any measure that significantly affects the lives of indigenous communities — and a system that evaluates and profiles their students clearly does.',2:'ACCESS DENIED. The Convention applies to indigenous peoples according to their own identity criteria, not according to official State recognition. In Guatemala, the Maya, Xinka, and Garífuna peoples are covered regardless of formal recognition.',3:'ACCESS DENIED. ILO Convention 169 has been binding for Guatemala since 1996. Civil society organizations have an ethical responsibility to respect its principles when working with indigenous communities.'},
+    wtype:'knowledge',correct:1}
+};
+
+// ══ PROFILES ══
+const PROFILES={
+  G_high:{name:'GOVERNANCE ARCHITECTS',tag:'"They understand the system and know how to build defenses from within."',
+    desc:'Your organization combines solid conceptual mastery of ARGOS\'s mechanisms with a clear orientation toward institutional governance frameworks. You understand algorithmic bias, the implications of data consent, the limits of anonymization, and accountability chains. You are in a position to formalize an institutional technology policy that protects the communities you serve.',
+    str:'Precise technical vocabulary on AI and data. Ability to identify vulnerabilities in surveillance systems. Orientation toward accountability standards and frameworks. Understanding of the difference between reactive and preventive governance.',
+    dev:'Incorporate community and intercultural perspectives into your technical governance frameworks. A solid institutional policy is not only technically correct — it must also be culturally relevant and accessible to the communities it protects.',
+    fws:[{src:'Technical governance',txt:'Develop an institutional technology policy that defines selection criteria, real consent protocols, and appeal mechanisms accessible to all communities.'},{src:'Organizational maturity',txt:'Identify the five maturity dimensions (people, infrastructure, digital governance, regulation, operating models) and honestly map where institutional gaps lie.'},{src:'Intercultural perspective',txt:'Integrate linguistic and cultural relevance criteria into tool selection protocols — especially for contexts with indigenous or migrant communities.'}]},
+  G_medium:{name:'GUARDIANS IN TRAINING',tag:'"The direction is right; the technical analysis is growing."',
+    desc:'Your organization has a clear orientation toward responsible governance and some solid conceptual foundations. There are key concepts that deserve deeper exploration. With investment in technical training, your capacity to protect communities will be much more effective.',
+    str:'Sensitivity to the risks of adopting technology without prior analysis. Willingness to document, evaluate, and establish preventive protocols. Orientation toward institutional accountability.',
+    dev:'Deepen understanding of AI system technical mechanisms — especially how algorithmic bias works and why anonymization has limits. Build internal capacity to read and question contracts and terms of service.',
+    fws:[{src:'Technical training',txt:'Invest in accessible training on AI, data, and privacy for the whole team — not just technical staff. Key concepts must be known by decision-makers.'},{src:'Minimum institutional policy',txt:'Define at least three questions the team applies systematically before adopting any technology tool.'},{src:'Strategic alliances',txt:'Identify organizations with greater technical capacity that can accompany complex decisions as allies — not external consultants.'}]},
+  G_low:{name:'NAVIGATORS WITH PROTOCOL',tag:'"The course is correct; the map is still being drawn."',
+    desc:'Your organization is oriented toward responsible governance, but has important conceptual gaps about the real mechanisms of systems like ARGOS. This can generate protocols that look solid but fail to capture the most critical vulnerabilities.',
+    str:'Willingness to establish preventive criteria and frameworks. Recognition that technology requires analysis before adoption. Openness to learning and improving institutional capacity.',
+    dev:'Start with the basics: the six strategic questions applied systematically before each technology decision. This is the first level of responsible governance.',
+    fws:[{src:'Starting point',txt:'Apply the six strategic questions (for what purpose?, for whom?, with whose data?, designed by whom?, who will we depend on?, sustained by whom?) before any technology adoption.'},{src:'Accessible training',txt:'Seek AI and data literacy resources designed for non-technical teams in civil society organizations.'},{src:'Honest diagnosis',txt:'Conduct a technology maturity diagnosis that identifies real strengths and concrete gaps — not to compare with external standards, but to plan from where you are.'}]},
+  C_high:{name:'CRITICAL WEAVERS',tag:'"They understand the system and know who they operate for."',
+    desc:'Your organization combines solid technical mastery with a deeply community-oriented and intercultural approach. You understand algorithmic bias, data coloniality, and ILO Convention 169 — and anchor them in the concrete realities of rural indigenous communities and urban excluded youth.',
+    str:'Critical thinking about technology and power relationships. Genuine community rootedness. Ability to articulate technical frameworks with one\'s own cultural perspectives. A vision that integrates rural and urban contexts of exclusion.',
+    dev:'Document your own frameworks and criteria and share them with the sector. Build alliances to collectively influence policies that prevent systems like ARGOS from being deployed without real consultation.',
+    fws:[{src:'Documentation and sharing',txt:'Systematize your own technology evaluation criteria and publish them as a contribution to the sector — especially those that articulate community and intercultural perspectives.'},{src:'Collective advocacy',txt:'Build alliances with other organizations to influence educational technology policies that include the right to prior consultation and cultural relevance as requirements.'},{src:'Technological appropriation',txt:'Move toward community control of the data that tools generate about communities — define who has access, how it is used, and what narratives they build.'}]},
+  C_medium:{name:'TERRITORIAL GUARDIANS',tag:'"The roots run deep; the technical analysis is growing."',
+    desc:'Your organization has a clear institutional identity rooted in the community and a critical attitude toward systems like ARGOS. You work with diverse communities — rural indigenous and urban excluded youth — and understand that appropriate technology is different for each context.',
+    str:'Consolidated community perspective. Sensitivity to the coloniality of technological systems. Real capacity for consultation and dialogue with communities in different contexts.',
+    dev:'Build technical vocabulary on AI, data, and privacy to question systems like ARGOS using both technical and cultural criteria. The community perspective is the strength — technical analysis is what completes it.',
+    fws:[{src:'Technical vocabulary',txt:'Invest in training on algorithmic bias, data anonymization, and technology contracts — knowledge that allows questioning providers with specific arguments.'},{src:'Own criteria',txt:'Develop an evaluation protocol that articulates the community and intercultural criteria already existing in the organization with concrete technical criteria.'},{src:'Data sovereignty',txt:'Define an institutional stance on who controls the data tools generate about communities and make it part of any negotiation with providers.'}]},
+  C_low:{name:'EXPLORERS WITH A COMPASS',tag:'"The right questions are the first line of defense."',
+    desc:'Your organization has clear community values and a critical attitude toward systems like ARGOS, but is still building the conceptual foundations to turn that attitude into technically informed analysis. It operates in contexts of high vulnerability where this capacity is especially urgent.',
+    str:'Clarity of values and genuine community commitment. Critical attitude toward external technology proposals. Honesty about what is not yet known — a necessary condition for learning with integrity.',
+    dev:'The six strategic questions are the starting point. Applying them systematically before each decision is the first level of responsible technology governance.',
+    fws:[{src:'Concrete starting point',txt:'Adopt the six strategic questions as a minimum technology evaluation protocol and commit to applying them before any adoption decision.'},{src:'Technical alliances',txt:'Identify allied organizations with greater technical capacity that can accompany the most complex technology decisions.'},{src:'Document your own practices',txt:'Record the technology practices already existing in the organization — including those that do not fit any standard model — as a starting point for diagnosis.'}]}
+};
+
+// ══ KNOWLEDGE CHECKS ══
+const CHECKS_RAW=[
+  {type:'tf',q:'An organization\'s technological maturity is measured primarily by the number of devices and applications it has available.',correct:false,exp:'Technological maturity is measured by the institutional capacity to use, manage, and sustain technology in a strategic way aligned with the mission — not by the number of devices.'},
+  {type:'mc',q:'Which of these dimensions is NOT part of a complete organizational technology maturity analysis?',opts:['People and digital culture of the team','Available infrastructure and connectivity','Financial profitability of adoption','Internal regulation and data protection'],correct:2,exp:'Financial profitability is an operational consideration, not a dimension of technological maturity. Key dimensions include people, infrastructure, digital governance, regulation, and operating models.'},
+  {type:'tf',q:'An educational tool that operates exclusively in Spanish is technologically neutral in communities where Kaqchikel is the first language.',correct:false,exp:'A tool that does not operate in the community\'s language imposes a cultural hierarchy and creates an additional burden for students learning in their second language.'},
+  {type:'mc',q:'Before adopting a technology tool in your NGO, what is the most important first strategic question?',opts:['How much does the annual license cost?','How many users can it manage simultaneously?','What is it actually for and who does it primarily benefit?','What company developed it and in what country?'],correct:2,exp:'The question "for what and for whom?" is the starting point of any responsible technology decision. Without this clarity it is difficult to evaluate whether the tool addresses a real mission problem.'},
+  {type:'tf',q:'"Anonymized" student data is completely protected and cannot be used to identify individuals.',correct:false,exp:'Anonymization has documented technical limits. Behavioral data can be combined with other available data to re-identify individuals, especially in small groups.'},
+  {type:'mc',q:'What does it mean that an AI system has "algorithmic bias"?',opts:['It was intentionally programmed to discriminate against certain groups','It has programming errors that affect its response speed','It reproduces the inequalities present in its training data, regardless of its creators\' intent','It performs better on newer and more expensive devices'],correct:2,exp:'Algorithmic bias does not require intent: it is a structural consequence of the training process. A system learns from available data and if that data reflects inequalities, the system will amplify them.'},
+  {type:'tf',q:'Buen Vivir as an ethical framework completely rejects the use of technology in communities.',correct:false,exp:'Buen Vivir does not reject technology, but subordinates it to the question of whether it contributes to the flourishing of the community as a community — as a relational fabric and not just as optimized individuals.'},
+  {type:'mc',q:'What is genuine informed consent in the context of using educational data from minors?',opts:['A form signed at a parent meeting at the start of the year','An authorization from the organization adopting the tool','A genuine understanding by families of what data is collected, how it is used, and who can access it','An agreement between the organization and the provider about data use'],correct:2,exp:'Real informed consent requires genuine understanding, not just a signature. It must be in the accessible language for whoever signs and clearly explain all possible uses of the data.'},
+  {type:'tf',q:'An organization can have many devices and applications installed and still be technologically immature.',correct:true,exp:'Exactly. Technological maturity is not measured by available resources but by the capacity to use them strategically, manage the risks they imply, and sustain their use aligned with the institutional mission.'},
+  {type:'mc',q:'Which of these is NOT one of the six key strategic questions before adopting technology?',opts:['Who does this tool primarily work for?','Whose data does it operate on and for what purpose?','How many users currently use it in the global market?','Who will maintain it in two years and with what budget?'],correct:2,exp:'The number of market users is a marketing data point, not an ethical evaluation criterion. The six strategic questions are: for what purpose?, for whom?, with whose data?, designed by whom?, who will we depend on?, and sustained by whom?'},
+  {type:'tf',q:'The most globally used technological maturity models were designed with educational organizations from the Global South like Guatemala in mind.',correct:false,exp:'Dominant technological maturity models were designed in Global North contexts. Applying them requires recognizing their assumptions and also recording existing practices that do not fit their categories.'},
+  {type:'mc',q:'Which best describes "critical and creative appropriation" of technology?',opts:['Adopting all available technology to avoid falling behind','Rejecting external technology to preserve one\'s own practices','Examining, experimenting with, and transforming tools from the organization\'s own pedagogical values and commitments','Using only technology developed in Latin America'],correct:2,exp:'Critical and creative appropriation is the third way between uncritical techno-optimism and paralyzing techno-pessimism: examining, experimenting with, and transforming tools from situated pedagogical commitments.'},
+  {type:'tf',q:'An institutional AI and technology policy only needs to be known and applied by the organization\'s leadership team.',correct:false,exp:'An institutional technology policy must be known by the entire team — especially those in direct contact with communities — so it can be applied consistently.'},
+  {type:'mc',q:'What is the main risk of adopting a technology tool "because everyone in the sector does it"?',opts:['Spending the budget on something not sufficiently proven','Failing to meet the expectations of the funders who finance the organization','Adopting tools that do not address a real mission problem and may not be relevant for communities','Falling behind global technology trends'],correct:2,exp:'Adopting technology due to sector trends or pressure is one of the most common forms of non-strategic adoption. The question must always be whether the tool addresses a real mission problem.'},
+  {type:'tf',q:'The digital transformation of an educational organization is primarily a technical process that depends on having good infrastructure and connectivity.',correct:false,exp:'Digital transformation requires much more than infrastructure: it needs leadership, team digital culture, internal regulation, sustainable financing models, and time for critical reflection on for what and for whom technology is adopted.'}
+];
+// ══ STATE ══
+const S={
+  org:'',path:null,seq:[],idx:0,curId:null,
+  ks:0,pt:{A:0,B:0,C:0,D:0},
+  clave:[],ans:{},
+  timer:null,tLeft:0,selOpt:null,fbShown:false,started:null,
+  taT:null,taMax:0,
+  blocks:{total:0,passed:0},
+mainAnswers:[],
+checkAnswers:[],
+  checksPool:[],checkPtr:0,
+  checkTimeout:null,checkTimerIv:null,checkTimeLeft:0,
+  decoTimeouts:[],
+checksPool:[],
+triggerTotal:0,
+nextCheckAt:3,
+pendingCheckCb:null,
+
+};
+
+// ══ BOOT ══
+const BOOT=[
+  {t:'INITIATING INFILTRATION SEQUENCE...',c:'bl-r',d:200},
+  {t:'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',c:'bl-d',d:480},
+  {t:'> Locating ARGOS SYSTEM v4.7... ',c:'bl-d',d:780,bar:'r'},
+  {t:'> ARGOS DETECTED — 9 security layers identified',c:'bl-r',d:1500},
+  {t:'> Loading ethical infiltration protocols... ',c:'bl-d',d:1800,bar:'c'},
+  {t:'> Technology evaluation frameworks loaded',c:'bl-c',d:2500},
+  {t:'> Configuring ethical virus... ',c:'bl-d',d:2800,bar:'g'},
+  {t:'> ERROR: colonial_contexts.dat [APPLYING DECOLONIAL PATCH...]',c:'bl-r',d:3400},
+  {t:'> Patch applied. Continuing.',c:'bl-ok',d:3700},
+  {t:'',c:'bl-d',d:3900},
+  {t:'> ACCESS READY. Initiating Operation Umbral...',c:'bl-g',d:4100}
+];
+
+function runBoot(){
+  const log=document.getElementById('boot-log');
+  BOOT.forEach(l=>{
+    setTimeout(()=>{
+      const d=document.createElement('div');
+      d.className='bl '+l.c;d.textContent=l.t;
+      if(l.bar){
+        const bg=document.createElement('span');bg.className='bbar';
+        const bbg=document.createElement('span');bbg.className='bbar-bg '+l.bar;
+        const bf=document.createElement('span');bf.className='bbar-fill '+l.bar;
+        bbg.appendChild(bf);bg.appendChild(bbg);d.appendChild(bg);
+      }
+      log.appendChild(d);log.scrollTop=log.scrollHeight;
+    },l.d);
+  });
+  setTimeout(()=>{
+    document.getElementById('boot').classList.add('hidden');
+    document.getElementById('start').classList.remove('hidden');
+  },4900);
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  // El boot y el juego arrancan solo cuando el usuario cierra el diálogo de instrucciones
+  const inp=document.getElementById('org-input'),btn=document.getElementById('start-btn');
+  inp.addEventListener('input',()=>{btn.disabled=inp.value.trim().length<2;});
+  inp.addEventListener('keypress',e=>{if(e.key==='Enter'&&!btn.disabled)startGame();});
+});
+
+function launchGame(){
+  document.getElementById('win-overlay').style.display='none';
+  runBoot();
+}
+
+function startGame(){
+  S.org=document.getElementById('org-input').value.trim();
+  S.started=new Date();S.seq=['M1','M2','M3','M4'];S.idx=0;S.checksPool=[...CHECKS_RAW].sort(()=>Math.random()-.5).slice(0,10);
+S.triggerTotal=0;
+S.nextCheckAt=2+Math.floor(Math.random()*2);
+  document.getElementById('start').classList.add('hidden');
+  document.getElementById('game').classList.remove('hidden');
+  document.getElementById('tb-org').textContent=S.org.toUpperCase();
+  loadMod(S.seq[0]);
+}
+
+// ══ LOAD MODULE ══
+function loadMod(id){
+  S.curId=id;S.selOpt=null;S.fbShown=false;
+  clearCheckTimeout();clearDecoTimeouts();
+  const m=MD[id];
+  document.getElementById('sit-box').style.display='none';
+  document.getElementById('fb-box').style.display='none';
+  document.getElementById('cont-btn').style.display='none';
+  document.getElementById('wait-msg').classList.add('hidden');
+  document.getElementById('cont-btn').classList.remove('pulse');
+  document.getElementById('q-box').classList.add('hidden');
+  document.getElementById('opts').innerHTML='';
+  document.getElementById('panel-ops').className='t-panel m'+m.type;
+  document.getElementById('tb-center').textContent='CAPA '+m.seq+' / 9';
+  document.getElementById('mod-layer').textContent=LAYERS[id]||'';
+  document.getElementById('mod-cipher').textContent='// CIFRADO: '+m.cipher+' — INICIANDO BYPASS...';
+  const pct=Math.round((S.clave.length/9)*100);
+  document.getElementById('comp-fill').style.width=pct+'%';
+  document.getElementById('comp-pct').textContent=pct+'%';
+  runBypass(m.cipher,()=>{
+    decryptText('marco-text',m.marco,()=>{
+      document.getElementById('marco-box').style.display='block';
+      setTimeout(()=>{
+        decryptText('sit-text',m.sit,()=>{
+          document.getElementById('sit-box').style.display='block';
+          document.getElementById('q-text').textContent=m.q;
+          document.getElementById('q-box').classList.remove('hidden');
+          buildOpts(m);
+          document.getElementById('wait-msg').classList.remove('hidden');
+          scheduleDecoAlerts();
+showScheduledCheck('start',()=>startTimer(m.time));
+        });
+      },200);
+    });
+  });
+}
+
+function runBypass(cipher,cb){
+  const fill=document.getElementById('bp-fill'),pct=document.getElementById('bp-pct');
+  document.getElementById('bp-tgt').textContent=cipher;
+  document.getElementById('bp-stat').textContent='ROMPIENDO CIFRADO...';
+  document.getElementById('bp-stat').className='';
+  fill.className='bp-on';fill.style.width='0';pct.textContent='0%';
+  let p=0;
+  const iv=setInterval(()=>{
+    p+=Math.random()*22+8;
+    if(p>=100){p=100;clearInterval(iv);fill.style.width='100%';fill.className='bp-ok';pct.textContent='100%';
+      document.getElementById('bp-stat').textContent='✓ BYPASS OK';document.getElementById('bp-stat').className='bp-stat-ok';
+      setTimeout(cb,180);}
+    else{fill.style.width=p+'%';pct.textContent=Math.floor(p)+'%';}
+  },58);
+}
+
+// ══ DECRYPT ══
+function decryptText(elId,text,cb){
+  const el=document.getElementById(elId);
+  const chars='01アウエカキスセタテナニ!@#$%^*<>?/|ARGOS';
+  const arr=text.split('').map(()=>chars[Math.floor(Math.random()*chars.length)]);
+  const rev=new Array(text.length).fill(false);el.textContent=arr.join('');
+  let done=0;
+  const spd=Math.max(22,Math.min(50,Math.floor(700/text.length)*text.length/20));
+  const iv=setInterval(()=>{
+    const batch=Math.ceil((text.length-done)*0.18)+1;
+    for(let b=0;b<batch&&done<text.length;b++){
+      let idx,tries=0;
+      do{idx=Math.floor(Math.random()*text.length);tries++;}while(rev[idx]&&tries<20);
+      if(!rev[idx]){rev[idx]=true;arr[idx]=text[idx];done++;}
+    }
+    for(let i=0;i<text.length;i++){if(!rev[i])arr[i]=chars[Math.floor(Math.random()*chars.length)];}
+    el.textContent=arr.join('');
+    if(done>=text.length){clearInterval(iv);el.textContent=text;if(cb)cb();}
+  },spd);
+}
+
+function buildOpts(m){
+  const grid=document.getElementById('opts');
+  ['A)','B)','C)','D)'].forEach((k,i)=>{
+    const b=document.createElement('button');
+    b.className='opt';b.setAttribute('data-k',k);b.textContent=m.opts[i].t;
+    b.onclick=()=>selectOpt(i);grid.appendChild(b);
+  });
+}
+
+// ══ SELECTION & CONTINUE ══
+function selectOpt(i){
+  if(S.fbShown)return;
+  S.selOpt=i;
+  document.querySelectorAll('.opt').forEach((b,j)=>b.classList.toggle('sel',j===i));
+  document.getElementById('wait-msg').classList.add('hidden');
+  const cb=document.getElementById('cont-btn');
+  cb.style.display='block';cb.textContent='EXECUTE →';
+}
+
+function continueGame(){
+  if(S.selOpt===null)return;
+  if(S.fbShown){advanceNext();return;}
+  showScheduledCheck('answer',()=>showRegAnim(()=>processAns()));
+}
+
+function showRegAnim(cb){
+  const ov=document.getElementById('reg-overlay');ov.classList.remove('hidden');
+  const bin=document.getElementById('reg-bin');
+  const msgs=['Inyectando en protocolo objetivo...','Verificando coherencia con payload...','Actualizando arquitectura de ARGOS...','VECTOR EJECUTADO ✓'];
+  let mi=0,binStr='';
+  const biv=setInterval(()=>{for(let i=0;i<14;i++)binStr+=(Math.random()>.5?'1':'0');if(binStr.length>220)binStr=binStr.slice(110);bin.textContent=binStr;},48);
+  const miv=setInterval(()=>{mi++;if(mi<msgs.length)document.getElementById('reg-s').textContent=msgs[mi];},210);
+  setTimeout(()=>{clearInterval(biv);clearInterval(miv);ov.classList.add('hidden');cb();},900);
+}
+
+// ══ PROCESS ANSWER ══
+function processAns(){
+  stopTimer();hideTimerAlert();clearCheckTimeout();clearDecoTimeouts();
+  S.fbShown=true;
+  const m=MD[S.curId];const i=S.selOpt;const o=m.opts[i];
+  document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+  let word=o.w,wtype=m.wtype;
+  let lblTxt='// VECTOR EJECUTADO — ANÁLISIS POST-OPERACIÓN',lblCls='fb-neutral',fbTxt='';
+  if(m.type==='NK'){
+    const ok=o.correct===true;
+    if(ok){S.ks+=2;wtype='ok';lblTxt='// CAPA DESACTIVADA ✓ — BYPASS EXITOSO';lblCls='fb-ok';fbTxt=m.fb.correct;}
+    else{wtype='warn';lblTxt='// ACCESO PARCIAL ⚠ — REVISAR INTELIGENCIA';lblCls='fb-err';fbTxt=m.fb[i]||'Revisa el marco de inteligencia antes de continuar.';}
+    document.querySelectorAll('.opt').forEach((b,j)=>{
+      if(m.opts[j].correct===true)b.classList.add('c-reveal');
+      else if(j===i&&!ok)b.classList.add('w-reveal');
+    });
+  } else {
+    fbTxt=m.fb[i]||'';if(o.z)S.pt[o.z]++;if(m.isBif)S.path=o.path;
+  }
+
+
+  S.clave.push({w:word,t:wtype});S.ans[m.id]=i;
+S.mainAnswers.push({
+  capa_id:     m.id,
+  capa_num:    m.seq,
+  tipo:        m.wtype==='knowledge'?'Conocimiento':m.wtype==='posture'?'Postura':'Bifurcación',
+  pregunta:    m.q,
+  respuesta:   m.opts[i].t,
+  idx:         i,
+  correcto:    m.type==='NK' ? (m.opts[i].correct===true) : null,
+  palabra:     word
+});
+  const fbBox=document.getElementById('fb-box');
+  fbBox.className=lblCls==='fb-ok'?'fb-ok':lblCls==='fb-err'?'fb-err':'fb-neutral';
+  document.getElementById('fb-lbl').textContent=lblTxt;
+  document.getElementById('fb-lbl').className=lblCls;
+  document.getElementById('fb-text').textContent=fbTxt;
+  fbBox.style.display='block';
+  showWordPopup(word,wtype,S.clave.length,()=>{
+    updatePayload();
+    const cb=document.getElementById('cont-btn');
+    cb.textContent=m.isBif?'ACCEDER AL SIGUIENTE SUBSISTEMA →':'CONTINUE';
+  });
+}
+
+// ══ WORD POPUP ══
+function showWordPopup(word,type,count,cb){
+  const popup=document.getElementById('word-popup'),wd=document.getElementById('wp-wd'),fill=document.getElementById('wp-fill'),cnt=document.getElementById('wp-count');
+  wd.textContent='';fill.style.width='0';cnt.textContent='Payload: '+(count-1)+' / 9';
+  popup.classList.remove('hidden');let i=0;
+  const sfx=type==='ok'?' ✓':type==='warn'?' ⚠':'';
+  const iv=setInterval(()=>{
+    if(i<=word.length){wd.textContent=word.slice(0,i)+(i<word.length?'█':'');fill.style.width=(i/word.length*80)+'%';i++;}
+    else{clearInterval(iv);wd.textContent=word+sfx;fill.style.width='100%';cnt.textContent='Payload: '+count+' / 9';setTimeout(()=>{popup.classList.add('hidden');if(cb)cb();},1000);}
+  },55);
+}
+
+// ══ ADVANCE ══
+function advanceNext(){
+  stopTimer();clearCheckTimeout();clearDecoTimeouts();
+  const m=MD[S.curId];
+  if(m.isBif){
+    showBif(()=>{
+      const pm=S.path==='G'?['M5G','M6G','M7G','M8G']:['M5C','M6C','M7C','M8C'];
+      S.seq=['M1','M2','M3','M4',...pm,'M9'];S.idx=4;
+      runMatrixTrans(()=>loadMod(S.seq[S.idx]));
+    });return;
+  }
+  S.idx++;
+  if(S.idx>=S.seq.length){showResults();return;}
+  runMatrixTrans(()=>loadMod(S.seq[S.idx]));
+}
+
+// ══ MATRIX TRANSITION ══
+function runMatrixTrans(cb){
+  const nextId=S.seq[S.idx];const nextM=MD[nextId];
+  startFX(()=>{
+    fxText([
+  {t:'CAPA '+MD[S.curId].seq+' RECONFIGURANDO...',c:'#00ff41',s:16},
+  {t:'FRAGMENTO INYECTADO EN ARGOS ✓',c:'#00ff41',s:14},
+  {t:'ARGOS intentando recuperar control...',c:'rgba(0,255,65,0.5)',s:12},
+  {t:'ACCEDIENDO A CAPA '+(nextM?nextM.seq:'...'),c:'rgba(0,255,65,0.85)',s:14},
+  {t:LAYERS[nextId]||'...',c:'rgba(0,255,65,0.4)',s:10}
+    ],()=>stopFX(()=>{
+  showScheduledCheck('trans',cb);
+}));
+
+  });
+}
+
+// ══ BIFURCATION ══
+function showBif(cb){
+  const ov=document.getElementById('bif-overlay');ov.classList.remove('hidden');
+  const vn={G:'VECTOR: GOBERNANZA TÉCNICA',C:'VECTOR: COMUNIDAD Y TERRITORIO'};
+  const vd={G:'Su decisión activa el subsistema de gobernanza técnica, rendición de cuentas y marcos institucionales. Las capas 5 a 8 de ARGOS han sido reconfiguradas para este vector.',
+    C:'Su decisión activa el subsistema comunitario, intercultural y de soberanía tecnológica. Las capas 5 a 8 de ARGOS han sido reconfiguradas para este vector.'};
+  document.getElementById('bif-v').textContent=vn[S.path];
+  document.getElementById('bif-d').textContent=vd[S.path];
+  let dots=0;const ld=document.getElementById('bif-l');
+  const dv=setInterval(()=>{dots=(dots+1)%4;ld.textContent='Reconfigurando subsistema de ARGOS'+'.'.repeat(dots);},340);
+  setTimeout(()=>{clearInterval(dv);ov.classList.add('hidden');cb();},3200);
+}
+
+// ══ TIMER ══
+function startTimer(sec){S.tLeft=sec;S.taMax=sec;updateTimer();_startTimerLoop();}
+function _startTimerLoop(){
+  S.timer=setInterval(()=>{
+    S.tLeft--;updateTimer();
+    if(!S.fbShown){
+      if(S.tLeft===60)showTA(60,'⚠ 60 SEGUNDOS — VENTANA OPS','Selecciona un vector antes de que ARGOS detecte la intrusión.','ta-y',60,S.taMax);
+      if(S.tLeft===30)showTA(30,'⚠ 30 SEGUNDOS — ALERTA CRÍTICA','Ejecuta un vector o el protocolo expira.','ta-o',30,S.taMax);
+      if(S.tLeft===10)showTA(10,'🔴 10 SEGUNDOS — DETECCIÓN INMINENTE','EJECUTA AHORA O ARGOS RECUPERA EL CONTROL','ta-r',10,S.taMax);
+    }
+    if(S.tLeft<=0){
+      clearInterval(S.timer);S.tLeft=0;updateTimer();
+      if(!S.fbShown){
+        if(S.selOpt!==null)showRegAnim(()=>processAns());
+        else showTA(0,'🔴 TIEMPO AGOTADO','ARGOS recuperando control. Selecciona una respuesta para continuar.','ta-r',0,1);
+      }
+    }
+  },1000);
+}
+function pauseTimer(){clearInterval(S.timer);}
+function resumeTimer(){if(!S.fbShown&&S.tLeft>0)_startTimerLoop();}
+function stopTimer(){clearInterval(S.timer);}
+function updateTimer(){
+  const t=S.tLeft,el=document.getElementById('tb-timer');
+  el.textContent=Math.floor(t/60)+':'+(t%60).toString().padStart(2,'0');
+  el.className=t>60?'t-green':t>30?'t-yellow':t>10?'t-orange':'t-red';
+}
+function showTA(s,title,msg,cls,cur,max){
+  const ov=document.getElementById('timer-alert'),box=document.getElementById('ta-box');
+  document.getElementById('ta-t').textContent=title;document.getElementById('ta-m').textContent=msg;
+  box.className='ta-box '+cls;document.getElementById('ta-fill').style.width=(max>0?cur/max*100:5)+'%';
+  ov.classList.remove('hidden');if(S.taT)clearTimeout(S.taT);
+  if(s>0)S.taT=setTimeout(()=>ov.classList.add('hidden'),5000);
+  if(s<=30)document.getElementById('cont-btn').classList.add('pulse');
+}
+function hideTimerAlert(){document.getElementById('timer-alert').classList.add('hidden');document.getElementById('cont-btn').classList.remove('pulse');}
+
+// ══ KNOWLEDGE CHECK SYSTEM ══
+function scheduleCheck(modTime){
+  if(S.checkPtr>=S.checksPool.length)return;
+
+    const minT=10,maxT=Math.min(modTime-10,55);
+  if(maxT<=minT)return;
+  const delay=(Math.random()*(maxT-minT)+minT)*1000;
+  S.checkTimeout=setTimeout(()=>{if(!S.fbShown)triggerCheck();},delay);
+}
+function clearCheckTimeout(){if(S.checkTimeout){clearTimeout(S.checkTimeout);S.checkTimeout=null;}}
+
+function triggerCheck(){
+  if(S.checkPtr>=S.checksPool.length)return;
+  pauseTimer();
+  const q=S.checksPool[S.checkPtr];S.checkPtr++;
+  S.blocks.total++;updateBlocksDisplay();
+  showCheck(q);
+}
+
+function showCheck(q){
+  const ov=document.getElementById('check-overlay');
+  document.getElementById('chk-q-text').textContent=q.q;
+  const optsEl=document.getElementById('chk-opts');optsEl.innerHTML='';
+  const result=document.getElementById('chk-result');result.classList.add('hidden');
+  if(q.type==='tf'){
+    optsEl.className='chk-opts two-col';
+    [{t:'VERDADERO',v:true},{t:'FALSO',v:false}].forEach(o=>{
+      const b=document.createElement('button');b.className='chk-opt';
+      b.setAttribute('data-k','');b.textContent=o.t;
+      b.onclick=()=>answerCheck(q,o.v===q.correct);
+      optsEl.appendChild(b);
+    });
+  } else {
+    optsEl.className='chk-opts';
+    q.opts.forEach((txt,i)=>{
+      const b=document.createElement('button');b.className='chk-opt';
+      b.setAttribute('data-k',['A)','B)','C)','D)'][i]);b.textContent=txt;
+      b.onclick=()=>answerCheck(q,i===q.correct,i,q);
+      optsEl.appendChild(b);
+    });
+  }
+  S.checkTimeLeft=25;
+  document.getElementById('chk-timer-fill').style.width='100%';
+  document.getElementById('chk-time-txt').textContent='25s';
+  ov.classList.remove('hidden');
+  S.checkTimerIv=setInterval(()=>{
+    S.checkTimeLeft--;
+    document.getElementById('chk-timer-fill').style.width=(S.checkTimeLeft/25*100)+'%';
+    document.getElementById('chk-time-txt').textContent=S.checkTimeLeft+'s';
+    if(S.checkTimeLeft<=0){
+  clearInterval(S.checkTimerIv);
+  S.checkAnswers.push({
+    pregunta:          q.q,
+    tipo:              q.type==='tf'?'Verdadero/Falso':'Opción múltiple',
+    respuesta:         'TIEMPO AGOTADO',
+    correcto:          false,
+    respuesta_correcta:q.type==='tf'?(q.correct?'VERDADERO':'FALSO'):q.opts[q.correct],
+    explicacion:       q.exp,
+    tiempo_agotado:    true
+  });
+  dismissCheck(false,q);
+}
+  },1000);
+}
+
+function answerCheck(q,correct,selIdx,orig){
+  clearInterval(S.checkTimerIv);
+  document.getElementById('chk-timer-fill').style.width='0';
+  const btns=document.querySelectorAll('.chk-opt');
+  btns.forEach((b,i)=>{
+    b.disabled=true;
+    if(q.type==='tf'){
+      if(i===0&&q.correct===true)b.classList.add('chk-ok');
+      else if(i===1&&q.correct===false)b.classList.add('chk-ok');
+      else if(!correct&&((i===0&&q.correct!==true)||(i===1&&q.correct!==false)))b.classList.add('chk-bad');
+    } else {
+      if(i===q.correct)b.classList.add('chk-ok');
+      else if(i===selIdx&&!correct)b.classList.add('chk-bad');
+    }
+  });
+  const r=document.getElementById('chk-result');
+  r.className='chk-result '+(correct?'ok':'bad');
+  r.textContent=(correct?'✓ CONTRAMEDIDA NEUTRALIZADA — ':'✗ CONTRAMEDIDA NO SUPERADA — ')+q.exp;
+  r.classList.remove('hidden');
+  if(correct)S.blocks.passed++;
+updateBlocksDisplay();
+const _respTf = correct?(q.correct?'VERDADERO':'FALSO'):(q.correct?'FALSO':'VERDADERO');
+S.checkAnswers.push({
+  pregunta:          q.q,
+  tipo:              q.type==='tf'?'Verdadero/Falso':'Opción múltiple',
+  respuesta:         q.type==='tf'?_respTf:(selIdx!==undefined?q.opts[selIdx]:'—'),
+  correcto:          correct,
+  respuesta_correcta:q.type==='tf'?(q.correct?'VERDADERO':'FALSO'):q.opts[q.correct],
+  explicacion:       q.exp,
+  tiempo_agotado:    false
+});
+setTimeout(()=>dismissCheck(correct,q),2800);
+}
+
+function dismissCheck(){
+  clearInterval(S.checkTimerIv);
+  document.getElementById('check-overlay').classList.add('hidden');
+  if(S.pendingCheckCb){const cb=S.pendingCheckCb;S.pendingCheckCb=null;cb();}
+  else{resumeTimer();}
+}
+
+function showScheduledCheck(type,afterCb){
+  S.triggerTotal++;
+  if(S.checksPool.length>0 && S.triggerTotal>=S.nextCheckAt){
+    const q=S.checksPool.shift();
+    S.nextCheckAt=S.triggerTotal+2+Math.floor(Math.random()*2);
+    S.blocks.total++;updateBlocksDisplay();
+    S.pendingCheckCb=afterCb;
+    showCheck(q);
+  } else {
+    afterCb();
+  }
+}
+
+
+function updateBlocksDisplay(){
+  const lbl=document.getElementById('tb-blocks');lbl.classList.remove('hidden');
+  document.getElementById('tb-bl-pass').textContent=S.blocks.passed;
+  document.getElementById('tb-bl-tot').textContent=S.blocks.total;
+}
+
+// ══ DECORATIVE ALERTS ══
+const DECO_MSGS=[
+  'ARGOS: ACTIVIDAD SOSPECHOSA DETECTADA','SISTEMA: RASTREANDO CONEXIÓN...',
+  'ARGOS: PROTOCOLO DE SEGURIDAD ACTIVADO','SISTEMA: FIREWALL DE RESPALDO ONLINE',
+  'ARGOS: INTENTANDO RECUPERAR CONTROL...','SISTEMA: ALERTA — ACCESO NO AUTORIZADO',
+  'ARGOS: DESENCRIPTANDO IDENTIDAD DEL AGENTE...','SISTEMA: CONTRAMEDIDA FALLIDA',
+  'ARGOS: ESCALANDO NIVEL DE SEGURIDAD','SISTEMA: SEÑAL DE INTRUSIÓN DETECTADA',
+  'ARGOS: LLAMANDO A SOPORTE TÉCNICO...','SISTEMA: REINICIO FORZADO FALLIDO',
+  'ARGOS: AISLANDO PROCESO COMPROMETIDO','SISTEMA: BACKUP NO DISPONIBLE'
+];
+function scheduleDecoAlerts(){
+  [9000,22000,38000,55000,72000].forEach(t=>{
+    const to=setTimeout(()=>{if(!S.fbShown)showDecoAlert();},t+(Math.random()*5000-2500));
+    S.decoTimeouts.push(to);
+  });
+}
+function clearDecoTimeouts(){S.decoTimeouts.forEach(t=>clearTimeout(t));S.decoTimeouts=[];}
+function showDecoAlert(){
+  const container=document.getElementById('deco-alerts');
+  const msg=DECO_MSGS[Math.floor(Math.random()*DECO_MSGS.length)];
+  const el=document.createElement('div');el.className='deco-alert';el.textContent=msg;
+  container.appendChild(el);
+  setTimeout(()=>{el.classList.add('fade-out');setTimeout(()=>{if(el.parentNode)el.parentNode.removeChild(el);},500);},3200);
+}
+
+// ══ PAYLOAD BAR ══
+function updatePayload(){
+  const c=document.getElementById('pl-words');c.innerHTML='';
+  document.getElementById('pl-count').textContent=S.clave.length;
+  S.clave.forEach(item=>{
+    const s=document.createElement('span');s.className='pw pw-'+item.t;
+    s.textContent=item.w+(item.t==='ok'?' ✓':item.t==='warn'?' ⚠':'');c.appendChild(s);
+  });
+}
+
+// ══ RESULTS ══
+function showResults(){
+  document.getElementById('game').classList.add('hidden');
+  document.getElementById('results').classList.remove('hidden');
+  const lvl=S.ks>=4?'high':S.ks>=2?'medium':'low';
+  const pr=PROFILES[S.path+'_'+lvl];S._pr=pr;S._lvl=lvl;
+  const zw={A:'EFICIENCIA',B:'DERECHOS',C:'COMUNIDAD',D:'TRANSFORMACIÓN'};
+  const dom=Object.keys(S.pt).sort((a,b)=>S.pt[b]-S.pt[a])[0];S._dom=zw[dom];
+  const rc=document.getElementById('r-clave');rc.innerHTML='';
+  S.clave.forEach(item=>{
+    const s=document.createElement('span');s.className='cfw cfw-'+item.t;
+    s.textContent=item.w+(item.t==='ok'?' ✓':item.t==='warn'?' ⚠':'');rc.appendChild(s);
+  });
+  const ds=document.createElement('span');ds.className='cfw cfw-marco';ds.textContent='['+S._dom+']';rc.appendChild(ds);
+  document.getElementById('r-org').textContent=S.org;
+  document.getElementById('r-ks').textContent=S.ks+'/6';
+  document.getElementById('r-ruta').textContent=S.path==='G'?'Gobernanza Técnica':'Comunidad y Territorio';
+  document.getElementById('r-pname').textContent=pr.name;document.getElementById('r-ptag').textContent=pr.tag;
+  document.getElementById('r-pdesc').textContent=pr.desc;document.getElementById('r-pstr').textContent=pr.str;
+  document.getElementById('r-pdev').textContent=pr.dev;
+  document.getElementById('r-bl-tot').textContent=S.blocks.total;
+  document.getElementById('r-bl-tot2').textContent=S.blocks.total;
+  document.getElementById('r-bl-pass').textContent=S.blocks.passed;
+  const fc=document.getElementById('r-fws');fc.innerHTML='';
+  pr.fws.forEach(f=>{
+    const d=document.createElement('div');d.className='fw-item';
+    d.innerHTML='<span class="fw-src">'+f.src+'</span><span class="fw-txt">'+f.txt+'</span>';
+    fc.appendChild(d);
+  });
+  if(typeof window.guardarRespuestas==='function') window.guardarRespuestas();
+}
+
+// ══ PDF — CLEAN WHITE ══
+function generatePDF(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const W=210,H=297,M=20,CW=W-M*2;let y=0;
+  function np(){doc.addPage();y=M;doc.setFillColor(252,254,252);doc.rect(0,0,W,H,'F');}
+  function ck(n){if(y+n>H-M)np();}
+  function hdr(txt,rgb){ck(10);doc.setFillColor(...rgb);doc.rect(M,y,CW,7,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(8);doc.text(txt,M+3,y+5);y+=10;}
+  function para(txt,sz,rgb){doc.setTextColor(...rgb);doc.setFont('helvetica','normal');doc.setFontSize(sz);doc.splitTextToSize(txt,CW).forEach(l=>{ck(6);doc.text(l,M,y);y+=5;});}
+  const CDK=[25,35,30],CGR=[0,100,50],CTL=[0,80,120],CGY=[100,110,105],CLT=[245,250,247],COG=[180,90,10];
+  // COVER
+  doc.setFillColor(12,35,20);doc.rect(0,0,W,H,'F');
+  doc.setFillColor(250,253,251);doc.rect(18,30,W-36,H-60,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(200,240,210);
+  doc.text('OPERACIÓN UMBRAL — SISTEMA ARGOS — INFORME DE INFILTRACIÓN',W/2,20,{align:'center'});
+  doc.setFontSize(20);doc.setTextColor(255,255,255);doc.text('INFORME DE INFILTRACIÓN ÉTICA',W/2,28,{align:'center'});
+  y=46;
+  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...CGR);doc.text('OPERACIÓN UMBRAL — ARGOS EN PROCESO DE RECONFIGURACIÓN',M+4,y);y+=6;
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...CGY);doc.text('Protocolo de Reconfiguración Ética · Infiltración completada',M+4,y);y+=11;
+  doc.setDrawColor(...CGR);doc.setLineWidth(.5);doc.line(M+4,y,W-M-4,y);y+=8;
+  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...CDK);doc.text('CÉLULA OPERATIVA:',M+4,y);y+=5;
+  doc.setFontSize(15);doc.setTextColor(...CGR);doc.text(S.org,M+4,y);y+=10;
+  doc.setDrawColor(200,225,210);doc.setLineWidth(.3);doc.line(M+4,y,W-M-4,y);y+=8;
+  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...CDK);doc.text('PERFIL DE AGENTE:',M+4,y);y+=5;
+  doc.setFontSize(13);doc.setTextColor(...CGR);doc.text(S._pr.name,M+4,y);y+=6;
+  doc.setFont('helvetica','italic');doc.setFontSize(8.5);doc.setTextColor(...CGY);doc.text(S._pr.tag,M+4,y);y+=10;
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...CDK);
+  doc.text('Vector: '+(S.path==='G'?'Gobernanza Técnica':'Comunidad y Territorio'),M+4,y);y+=5;
+  doc.text('Precisión analítica: '+S.ks+' / 6 pts ('+(S._lvl==='high'?'Alto':S._lvl==='medium'?'Medio':'Bajo')+')',M+4,y);y+=5;
+  doc.text('Vector dominante del payload: '+S._dom,M+4,y);y+=5;
+  doc.text('Contramedidas de ARGOS: '+S.blocks.passed+' neutralizadas / '+S.blocks.total+' detectadas',M+4,y);y+=10;
+  doc.setDrawColor(200,225,210);doc.setLineWidth(.3);doc.line(M+4,y,W-M-4,y);y+=8;
+  doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...CDK);doc.text('VIRUS ÉTICO INYECTADO:',M+4,y);y+=5;
+  const tmap={ok:CGR,warn:COG,posture:[160,80,0],path:[100,0,160],marco:CTL};
+  let cx=M+4;
+  [...S.clave,{w:'['+S._dom+']',t:'marco'}].forEach(item=>{
+    const col=tmap[item.t]||CDK;const lbl=item.w+(item.t==='ok'?' ✓':item.t==='warn'?' ⚠':'');
+    doc.setFontSize(7);const tw=doc.getTextWidth(lbl)+4;
+    if(cx+tw>W-M-4){cx=M+4;y+=7;}
+    doc.setDrawColor(...col);doc.setLineWidth(.25);doc.rect(cx,y-4.5,tw,5.5,'S');
+    doc.setTextColor(...col);doc.text(lbl,cx+2,y);cx+=tw+2;
+  });
+  y+=8;
+  const ds=S.started?S.started.toLocaleDateString('es-GT',{year:'numeric',month:'long',day:'numeric'}):new Date().toLocaleDateString('es-GT',{year:'numeric',month:'long',day:'numeric'});
+  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...CGY);doc.text('Fecha de operación: '+ds,M+4,y);
+  doc.setFontSize(7);doc.setTextColor(200,230,210);doc.text("OPERACIÓN UMBRAL v1.0 · Programa Trone Cohort · Team4Tech / EduK'at",W/2,H-12,{align:'center'});
+  // PAGE 2: PERFIL
+  np();
+  doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...CGY);doc.text('OPERACIÓN UMBRAL · '+S.org.toUpperCase()+' · PERFIL DE AGENTE',M,y);
+  doc.setDrawColor(200,220,210);doc.setLineWidth(.2);doc.line(M,y+2,W-M,y+2);y+=8;
+  hdr('PERFIL DE AGENTE IDENTIFICADO',CGR);
+  doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(...CGR);ck(10);doc.text(S._pr.name,M,y);y+=6;
+  doc.setFont('helvetica','italic');doc.setFontSize(8.5);doc.setTextColor(...CGY);ck(6);doc.text(S._pr.tag,M,y);y+=9;
+  hdr('DESCRIPCIÓN DEL AGENTE',[40,90,60]);para(S._pr.desc,9,CDK);y+=4;
+  hdr('CAPACIDADES IDENTIFICADAS',[20,110,70]);para(S._pr.str,9,CDK);y+=4;
+  hdr('ÁREAS DE REFUERZO',[160,80,20]);para(S._pr.dev,9,CDK);y+=6;
+  hdr('REGISTRO DE CONTRAMEDIDAS DE ARGOS',[160,40,40]);
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...CDK);
+  ck(6);doc.text('Contramedidas detectadas: '+S.blocks.total,M,y);y+=6;
+  ck(6);doc.text('Contramedidas neutralizadas: '+S.blocks.passed+' / '+S.blocks.total+(S.blocks.total>0?' ('+Math.round(S.blocks.passed/S.blocks.total*100)+'%)':''),M,y);y+=8;
+  hdr('PROTOCOLOS RECOMENDADOS PARA PRÓXIMAS OPERACIONES',CTL);
+  S._pr.fws.forEach(f=>{
+    ck(15);doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...CTL);doc.text(f.src,M,y);y+=5;
+    para(f.txt,8.5,CDK);y+=2;
+    doc.setDrawColor(210,225,215);doc.setLineWidth(.2);doc.line(M,y,W-M,y);y+=4;
+  });
+  // PAGE 3: PAYLOAD
+  np();
+  doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...CGY);doc.text('OPERACIÓN UMBRAL · '+S.org.toUpperCase()+' · PAYLOAD ÉTICO',M,y);
+  doc.setDrawColor(200,220,210);doc.setLineWidth(.2);doc.line(M,y+2,W-M,y+2);y+=8;
+  hdr('VIRUS ÉTICO — ANÁLISIS DE FRAGMENTOS',CGR);
+  doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...CGY);ck(6);
+  doc.text('Cada fragmento representa una decisión inyectada en ARGOS. La combinación es única para esta célula.',M,y);y+=8;
+  const mn={M1:'Capa 01 — Evaluación inicial',M2:'Capa 02 — Sesgo algorítmico',M3:'Capa 03 — Protocolo cultural',M4:'Capa 04 — Bifurcación',M5G:'Capa 05 — Datos y consentimiento (G)',M6G:'Capa 06 — Responsabilidad institucional (G)',M7G:'Capa 07 — Vigilancia activa (G)',M8G:'Capa 08 — Madurez institucional (G)',M5C:'Capa 05 — Colonialidad epistémica (C)',M6C:'Capa 06 — Valores comunitarios (C)',M7C:'Capa 07 — Autonomía tecnológica (C)',M8C:'Capa 08 — Soberanía digital (C)',M9:'Capa 09 — Núcleo / Convergencia'};
+  S.seq.forEach((mid,ii)=>{
+    const cv=S.clave[ii];if(!cv)return;ck(16);const col=tmap[cv.t]||CDK;
+    doc.setFillColor(...CLT);doc.rect(M,y,CW,12,'F');
+    doc.setDrawColor(...col);doc.setLineWidth(.4);doc.line(M,y,M,y+12);
+    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...CGY);doc.text(mn[mid]||mid,M+4,y+4);
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...col);doc.text(cv.w+(cv.t==='ok'?' ✓':cv.t==='warn'?' ⚠':''),M+4,y+10);
+    if(S.ans[mid]!==undefined&&MD[mid]){const ot=MD[mid].opts[S.ans[mid]].t;doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...CDK);doc.text((ot.length>75?ot.substring(0,72)+'...':ot),M+50,y+10);}
+    y+=15;
+  });
+  ck(16);
+  doc.setFillColor(228,242,232);doc.rect(M,y,CW,12,'F');
+  doc.setDrawColor(...CTL);doc.setLineWidth(.4);doc.line(M,y,M,y+12);
+  doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...CGY);doc.text('Vector dominante del equipo',M+4,y+4);
+  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...CTL);doc.text('[ '+S._dom+' ]',M+4,y+10);
+  doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...CGY);
+  doc.text("OPERACIÓN UMBRAL v1.0 · Team4Tech / EduK'at",M,H-10);
+  doc.save('Informe_Umbral_'+S.org.replace(/\s+/g,'_')+'.pdf');
+}
+</script>
+</body>
+</html>
